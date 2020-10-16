@@ -6,6 +6,6 @@ This Script queries trough a given number of ips or mdns names and restricts the
 
 ##### Usage
 To use the script:
-1. ***Don't*** forget to change the ip/mdns range in line
+1. ***Don't*** forget to change the ip/mdns range in line [9](Shelly/Secure.py#L9)
 ```
 python3 secure.py [username] [password]
