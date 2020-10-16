@@ -6,7 +6,7 @@ import sys
 import time
 import json
 
-ips = ['floziroll','joziroll'] #add ips or mdns name of devices
+ips = ['192.168.33.1'] #add ips or mdns names of your devices
 help_str = 'Please provide the information in the format:\nsecure.py [mode] [username] [password]\n\nmode\temable/disable the login page\n\nusername\tthe username you wantto use\n\npassword\tthe password you want to use'
 prev_username = '' #insert your previously used username
 prev_password = '' #insert your previously used passowrd
