@@ -1,3 +1,5 @@
+# At the moemnt this Script is nowhere near working/being complete, use at your own risk
+
 # Shelly
 Stuff based around the beautifull small electronic devices from Allterco
 
