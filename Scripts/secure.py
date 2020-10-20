@@ -28,7 +28,7 @@ def check_input():
 
 def disable():
 	for ip in ips:
-		r = requests.get('http://' + ip + '/settings/login?enabled=0&unprotected=1', auth=(prev_username, prev_password))
+		r = requests.get('http://' + ip + '/settings/login?enabled=0&unprotected=1&username=""', auth=(prev_username, prev_password))
 		print('Disabled restricted login for ' + ip)
 		print('Got output: ' + r.content.decode())
 
