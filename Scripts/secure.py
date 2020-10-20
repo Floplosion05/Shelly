@@ -8,6 +8,8 @@ import json
 
 ips = ['floziroll','joziroll'] #add ips or mdns name of devices
 help_str = 'Please provide the information in the format:\nsecure.py [mode] [username] [password]\n\nmode\temable/disable the login page\n\nusername\tthe username you wantto use\n\npassword\tthe password you want to use'
+username = ''
+password = ''
 prev_username = 'test' #insert your previously used username
 prev_password = 'test' #insert your previously used passowrd
 
