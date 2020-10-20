@@ -42,6 +42,7 @@ def enable(username, password):
 def changeAuth():
 	for ip in ips:
 		r = requests.get('http://' + ip + '/settings/login?enabled=1&username=' + username + '&password=' + password, auth=(prev_username, prev_password))
+		print('Got output: ' + r.content.decode())
 
 if __name__ == '__main__':
 	check_input()
