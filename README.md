@@ -27,7 +27,7 @@ python3 secure.py [mode] [username] [password]
   - 0: Failed to load Shelly.json, check the directory and path. (The script cant find the Credentials-File (Shelly.json))
   - 1: Wrong password entered. (The provided password doesnt match with the saved hash)
   - 2: Right hash but wrong password provided. (The entered password matches the saved hash, but not the actual password on the login page)
-  - 3: Found Shelly.json, but didnt find entry for this device. (The script found the Credential-File, but the restricted login was never enabled with this script)
+  - 3: The script found Shelly.json, but didnt find an entry for this device. (The script found the Credential-File, but the restricted login was never enabled with this script)
 
 ##### Credentials-File
 The Credentials-File(Shelly.json) is located in the same directory as the script.
