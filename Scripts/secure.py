@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 import _io
 import os.path
 
-ips = ['192.168.100.1'] #add ips or mdns name of devices
+ips = ['192.168.100.1', '192.168.100.2'] #add ips or mdns name of devices
 help_str = 'Please provide the information in the format:\nsecure.py [mode] [username] [password]\n\nmode\t\tenable/disable the login page\n\nusername\tthe username you want to use\n\npassword\tthe password you want to use'
 end_str = '\n\nIf you are having trouble, please visit https://github.com/Floplosion05/Shelly'
 errors = ['Failed to load Shelly.json, check the directory and path.', 'Wrong password entered.', 'Right hash found but wrong password provided.', 'Found Shelly.json, but didnt find entry for this device']
@@ -39,7 +39,7 @@ class Shelly:
 		else:
 			content_json = r.json()
 			if content_json['enabled'] and content_json['unprotected'] == False and content_json['username'] == self.username:
-				print('Succesfull, saving the credentials')
+				print('Succesfully enabled restricted-login, saving the credentials')
 				self.save()
 
 	def disable(self):
@@ -47,7 +47,6 @@ class Shelly:
 		if self.check_encrypted_password(self.password, self.prev_password_hash):
 			r = requests.get('http://' + self.ip + '/settings/login?enabled=0&unprotected=1&username=""', auth=(self.username, self.password))
 			print('Disabling restricted login for ' + self.ip)
-			print(r.content.decode())
 			if r.content.decode() == '401 Unauthorized':
 				self.error(2)
 			else:
@@ -107,7 +106,7 @@ class Shelly:
 		return self.pwd_context.verify(password, hashed)
 
 	def error(self, code):
-		exit(self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
+		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
 
 def check_input():
 	if len(sys.argv) > 1 and sys.argv[1] in commands:
