@@ -5,45 +5,88 @@ from requests.auth import HTTPBasicAuth
 import sys
 import time
 import json
+from passlib.context import CryptContext
+import _io
+import os.path
 
-ips = ['floziroll','joziroll'] #add ips or mdns name of devices
-help_str = 'Please provide the information in the format:\nsecure.py [mode] [username] [password]\n\nmode\temable/disable the login page\n\nusername\tthe username you wantto use\n\npassword\tthe password you want to use'
-username = ''
-password = ''
-prev_username = 'test' #insert your previously used username
-prev_password = 'test' #insert your previously used passowrd
+ips = ['floziroll'] #add ips or mdns name of devices
+help_str = 'Please provide the information in the format:\nsecure.py [mode] [username] [password]\n\nmode\t\tenable/disable the login page\n\nusername\tthe username you want to use\n\npassword\tthe password you want to use'
+errors = ['Failed to load Shelly.json, check the directory and path.\nYou may get this error, because the login page is already secured but there is no file called "Shelly.json" containing the necessary credentials.\n\nIf you are having trouble, please visit https://github.com/Floplosion05/Shelly', '']
+commands = ['disable', 'enable']
+
+class Shelly:
+
+	def __init__(self, ip, mode, password, username, errors):
+		self.ip = ip
+		self.mode = mode
+		self.password = password
+		self.username = password
+		self.errors = errors
+		self.pwd_context = CryptContext(
+			schemes=["pbkdf2_sha256"],
+			default="pbkdf2_sha256",
+			pbkdf2_sha256__default_rounds=30000
+			)
+		eval('self.' + self.mode)()
+
+
+	def enable(self):
+		r = requests.get('http://' + self.ip + '/settings/login?enabled=1&username=' + self.username + '&password=' + self.password)
+		print('Enabled restricted login for ' + self.ip + ' with\nusername:\t' + self.username + '\npassword\t' + self.password)
+		print('Got output: ' + r.content.decode())
+		if r.content.decode() == '401 Unauthorized':
+			self.changeAuth()
+
+	def disable(self):
+		self.prev_username, self.prev_password = self.load()
+		r = requests.get('http://' + self.ip + '/settings/login?enabled=0&unprotected=1&username=""', auth=(self.prev_username, self.prev_password))
+		print('Disabled restricted login for ' + self.ip)
+		print('Got output: ' + r.content.decode())
+
+	def changeAuth(self):
+		r = requests.get('http://' + self.ip + '/settings/login?enabled=1&username=' + self.username + '&password=' + self.password, auth=(self.prev_username, self.prev_password))
+		print('Got output: ' + r.content.decode())
+
+	def load(self):
+		if os.path.isfile('Shellys.json'):
+			with open('Shellys.json', 'r') as f:
+				self.data = json.loads(f.read().strip())
+				return json.dumps(self.data), json.dumps(self.data)
+		else:
+			self.error(0)
+
+	def save(self):
+		if os.path.isfile('Shellys.json'):
+			with open('Shellys.json', 'a') as f:
+				devices = json.loads(f.read().strip())
+				print(devices)
+		else:
+			with open('Shellys.json', 'w') as f:
+				f.write({'devices':[{'ip':self.ip, 'username':self.username, 'password':self.password}]})
+
+	def encrypt_password(self, password):
+		return self.pwd_context.encrypt(password)
+
+	def check_encrypted_password(self, password, hashed):
+		return self.pwd_context.verify(password, hashed)
+
+	def error(self, code):
+		exit(self.errors[code])
 
 def check_input():
-	if (len(sys.argv) == 2 and sys.argv[1] == 'disable'):
-		disable()
-	elif (len(sys.argv) == 4 and sys.argv[1] == 'enable'):
-		username = str(sys.argv[2])
-		password = str(sys.argv[3])
-		enable(username, password)
-	elif (len(sys.argv) == 4 and sys.argv[1] == 'changeAuth'):
-		changeAuth()
+	if sys.argv[1] in commands:
+		if len(sys.argv) == 2:
+			for ip in ips:
+				ips[ips.index(ip)] = Shelly(ip, sys.argv[1], '', '', errors)
+		elif len(sys.argv) == 4:
+			for ip in ips:
+				ips[ips.index(ip)] = Shelly(ip, sys.argv[1], sys.argv[2], sys.argv[3], errors)
+		else:
+			print(help_str)
+			quit()
 	else:
 		print(help_str)
 		quit()
-
-def disable():
-	for ip in ips:
-		r = requests.get('http://' + ip + '/settings/login?enabled=0&unprotected=1&username=""', auth=(prev_username, prev_password))
-		print('Disabled restricted login for ' + ip)
-		print('Got output: ' + r.content.decode())
-
-def enable(username, password):
-	for ip in ips:
-		r = requests.get('http://' + ip + '/settings/login?enabled=1&username=' + username + '&password=' + password)
-		print('Enabled restricted login for ' + ip + ' with\nusername:\t' + username + '\npassword\t' + password)
-		print('Got output: ' + r.content.decode())
-		time.sleep(0.05)
-
-def changeAuth():
-	for ip in ips:
-		r = requests.get('http://' + ip + '/settings/login?enabled=1&username=' + username + '&password=' + password, auth=(prev_username, prev_password))
-		print('Got output: ' + r.content.decode())
-		f = open(ip + '.json', 'w+')
 
 if __name__ == '__main__':
 	check_input()
