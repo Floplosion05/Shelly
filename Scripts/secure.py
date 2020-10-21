@@ -107,7 +107,7 @@ class Shelly:
 		return self.pwd_context.verify(password, hashed)
 
 	def error(self, code):
-		exit(self.errors[code] + '\nErrorcode: ' + code + end_str)
+		exit(self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
 
 def check_input():
 	if len(sys.argv) > 1 and sys.argv[1] in commands:
