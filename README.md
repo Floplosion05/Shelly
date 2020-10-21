@@ -23,6 +23,7 @@ To use the script run:
 python3 secure.py [mode] [username] [password]
   mode  enable/disable
 ```
-##### Error(Codes)
-  - 1:
-  - 2:
+##### Error-Codes)
+  - 0: Failed to load Shelly.json, check the directory and path. (The script cant find the credentials file ("Shelly.json"))
+  - 1: Wrong password entered. (The provided password doesnt match with the saved hash)
+  - 2: Right hash but wrong password provided. (The entered password matches the saved hash, but not the actual password on the login page)
