@@ -12,4 +12,6 @@ To use the script:
 ```
 python3 secure.py [username] [password]
 ```
-2. Errors
+2. Error(Codes)
+  - 1:
+  - 2:
