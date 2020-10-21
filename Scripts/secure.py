@@ -11,7 +11,7 @@ import os.path
 
 ips = ['floziroll'] #add ips or mdns name of devices
 help_str = 'Please provide the information in the format:\nsecure.py [mode] [username] [password]\n\nmode\t\tenable/disable the login page\n\nusername\tthe username you want to use\n\npassword\tthe password you want to use'
-errors = ['Failed to load Shelly.json, check the directory and path.\nYou may get this error, because the login page is already secured but there is no file called "Shelly.json" containing the necessary credentials.\n\nIf you are having trouble, please visit https://github.com/Floplosion05/Shelly', '']
+errors = ['Failed to load Shelly.json, check the directory and path.\n\nIf you are having trouble, please visit https://github.com/Floplosion05/Shelly', '']
 commands = ['disable', 'enable']
 
 class Shelly:
@@ -32,10 +32,13 @@ class Shelly:
 
 	def enable(self):
 		r = requests.get('http://' + self.ip + '/settings/login?enabled=1&username=' + self.username + '&password=' + self.password)
-		print('Enabled restricted login for ' + self.ip + ' with\nusername:\t' + self.username + '\npassword\t' + self.password)
-		print('Got output: ' + r.content.decode())
+		print('Enabled restricted login for ' + self.ip + ' with\nusername:\t' + self.username + '\npassword\t' + self.password + '\n')
 		if r.content.decode() == '401 Unauthorized':
 			self.changeAuth()
+		content_json = r.json()
+		if content_json['enabled'] and content_json['enabled'] == 'true':
+			print(content_json['enabled'])
+			pass
 
 	def disable(self):
 		self.prev_username, self.prev_password = self.load()
@@ -74,7 +77,7 @@ class Shelly:
 		exit(self.errors[code])
 
 def check_input():
-	if sys.argv[1] in commands:
+	if len(sys.argv) > 1 and sys.argv[1] in commands:
 		if len(sys.argv) == 2:
 			for ip in ips:
 				ips[ips.index(ip)] = Shelly(ip, sys.argv[1], '', '', errors)
