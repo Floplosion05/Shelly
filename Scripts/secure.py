@@ -11,7 +11,8 @@ import os.path
 
 ips = ['floziroll'] #add ips or mdns name of devices
 help_str = 'Please provide the information in the format:\nsecure.py [mode] [username] [password]\n\nmode\t\tenable/disable the login page\n\nusername\tthe username you want to use\n\npassword\tthe password you want to use'
-errors = ['Failed to load Shelly.json, check the directory and path.\n\nIf you are having trouble, please visit https://github.com/Floplosion05/Shelly', '']
+end_str = '\n\nIf you are having trouble, please visit https://github.com/Floplosion05/Shelly'
+errors = ['Failed to load Shelly.json, check the directory and path.' + end_str, 'Wrong password entered' + end_str]
 commands = ['disable', 'enable']
 
 class Shelly:
@@ -43,16 +44,22 @@ class Shelly:
 			self.save()
 
 	def disable(self):
-		self.prev_username, self.prev_password = self.load()
-		r = requests.get('http://' + self.ip + '/settings/login?enabled=0&unprotected=1&username=""', auth=(self.prev_username, self.prev_password))
-		print('Disabled restricted login for ' + self.ip)
-		print('Got output: ' + r.content.decode())
+		self.prev_username, self.prev_password_hash = self.load()
+		self.prev_password = input('Please enter your last password:\n')
+		if self.check_encrypted_password(self.prev_password, self.prev_password_hash):
+			r = requests.get('http://' + self.ip + '/settings/login?enabled=0&unprotected=1&username=""', auth=(self.prev_username, self.prev_password))
+			print('Disabled restricted login for ' + self.ip)
+		else:
+			self.error(1)
 
 	def changeAuth(self):
-		self.prev_username, self.prev_password = self.load()
-		print('Changing authentification-credentials to:\nusername\t' + self.prev_username + '\npassword\t' + self.prev_password)
-		r = requests.get('http://' + self.ip + '/settings/login?enabled=1&username=' + self.username + '&password=' + self.password, auth=(self.prev_username, self.prev_password))
-		print('Got output: ' + r.content.decode())
+		self.prev_username, self.prev_password_hash = self.load()
+		self.prev_password = input('Please enter your last password:\n')
+		if self.check_encrypted_password(self.prev_password, self.prev_password_hash):
+			print('Changing authentification-credentials to:\nusername\t' + self.prev_username + '\npassword\t' + self.prev_password)
+			r = requests.get('http://' + self.ip + '/settings/login?enabled=1&username=' + self.username + '&password=' + self.password, auth=(self.prev_username, self.prev_password))
+		else:
+			self.error(1)
 
 	def load(self):
 		if os.path.isfile('Shellys.json'):
