@@ -30,7 +30,7 @@ python3 secure.py [mode] [username] [password]
   - 3: Found Shelly.json, but didnt find entry for this device. (The script found the Credentials-File, but the restricted login was never enabled with this script)
 
 ##### Credentials-File
-The Credentials-File(Shelly.json) is located in the same directory as the script.
+The Credentials-File(Shelly.json) is generated and then located in the same directory as the script.
 The structure is:
 ```
 {"devices": [{"ip": "192.168.100.1", "username": "test", "password": "$pbkdf2-sha256$30000$yZnzPqc0Rqi1NibEeM.5Fw$QZ0sk1Z6K4LMt3UM3AGrrKLk9jBOjwrXsY1psfAPY4Q"}, {"ip": "192.168.100.2", "username": "test", "password": "$pbkdf2-sha256$30000$yZnzPqc0Rqi1NibEeM.5Fw$QZ0sk1Z6K4LMt3UM3AGrrKLk9jBOjwrXsY1psfAPY4Q"}]}
