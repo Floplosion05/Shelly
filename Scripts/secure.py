@@ -33,7 +33,7 @@ class Shelly:
 
 	def enable(self):
 		r = requests.get('http://' + self.ip + '/settings/login?enabled=1&unprotected=0&username=' + self.username + '&password=' + self.password)
-		print('Enabled restricted login for ' + self.ip + ' with\nusername:\t' + self.username + '\npassword\t' + self.password + '\n')
+		print('Enabling restricted login for ' + self.ip + ' with\nusername:\t' + self.username + '\npassword\t' + self.password + '\n')
 		if r.content.decode() == '401 Unauthorized':
 			print('Login already restricted')
 			self.changeAuth()
@@ -58,6 +58,7 @@ class Shelly:
 		if self.check_encrypted_password(self.prev_password, self.prev_password_hash):
 			print('Changing authentification-credentials to:\nusername\t' + self.prev_username + '\npassword\t' + self.prev_password)
 			r = requests.get('http://' + self.ip + '/settings/login?enabled=1&username=' + self.username + '&password=' + self.password, auth=(self.prev_username, self.prev_password))
+			self.save()
 		else:
 			self.error(1)
 
@@ -66,6 +67,7 @@ class Shelly:
 			with open('Shellys.json', 'r') as f:
 				self.data = json.load(f)
 				for device in self.data['devices']:
+					print('test')
 					if self.ip == device['ip']:
 						print('Device found')
 						return device['username'], device['password']
@@ -78,7 +80,13 @@ class Shelly:
 		if os.path.isfile('Shellys.json'):
 			with open('Shellys.json', 'r') as f:
 				self.data = json.load(f)
+				for device in self.data['devices']:
+					if self.ip == device['ip']:
+						return True
+				self.data['devices'].append({"ip":self.ip, "username":self.username, "password":self.hash})
+				print(self.data)
 		else:
+			print('File doesnt exist, creating now')
 			with open('Shellys.json', 'w') as f:
 				json.dump({"devices":[{"ip":self.ip, "username":self.username, "password":self.hash}]}, f)
 
