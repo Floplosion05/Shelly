@@ -3,7 +3,6 @@
 import requests
 from requests.auth import HTTPBasicAuth
 import sys
-import time
 import json
 from passlib.context import CryptContext
 import _io
@@ -12,7 +11,7 @@ import os.path
 ips = ['192.168.100.1'] #add ips or mdns name of devices
 help_str = 'Please provide the information in the format:\nsecure.py [mode] [username] [password]\n\nmode\t\tenable/disable the login page\n\nusername\tthe username you want to use\n\npassword\tthe password you want to use'
 end_str = '\n\nIf you are having trouble, please visit https://github.com/Floplosion05/Shelly'
-errors = ['Failed to load Shelly.json, check the directory and path.' + end_str, 'Wrong password entered.' + end_str, 'Right hash but wrong password provided.' + end_str]
+errors = ['Failed to load Shelly.json, check the directory and path.', 'Wrong password entered.', 'Right hash but wrong password provided.', 'Found Shelly.json, but didnt find entry for this device']
 commands = ['disable', 'enable']
 
 class Shelly:
@@ -44,12 +43,15 @@ class Shelly:
 				self.save()
 
 	def disable(self):
-		print('Output:')
 		self.prev_username, self.prev_password_hash = self.load()
 		if self.check_encrypted_password(self.password, self.prev_password_hash):
 			r = requests.get('http://' + self.ip + '/settings/login?enabled=0&unprotected=1&username=""', auth=(self.username, self.password))
-			print('Disabled restricted login for ' + self.ip)
+			print('Disabling restricted login for ' + self.ip)
 			print(r.content.decode())
+			if r.content.decode() == '401 Unauthorized':
+				self.error(2)
+			else:
+				print('Succesfull, saving the credentials')
 		else:
 			self.error(1)
 
@@ -60,7 +62,7 @@ class Shelly:
 			print('Changing authentification-credentials to:\nusername\t' + self.username + '\npassword\t' + self.password)
 			r = requests.get('http://' + self.ip + '/settings/login?enabled=1&username=' + self.username + '&password=' + self.password, auth=(self.prev_username, self.prev_password))
 			if r.content.decode() == '401 Unauthorized':
-				self.error(3)
+				self.error(2)
 			else:
 				print('Succesfull, saving the credentials')
 				self.save()
@@ -73,11 +75,8 @@ class Shelly:
 				self.data = json.load(f)
 				for device in self.data['devices']:
 					if self.ip == device['ip']:
-						print(device)
 						return device['username'], device['password']
-					else:
-						print('Test')
-						return False
+				self.error(3)
 		else:
 			self.error(0)
 			return False
@@ -108,7 +107,7 @@ class Shelly:
 		return self.pwd_context.verify(password, hashed)
 
 	def error(self, code):
-		exit(self.errors[code] + '\nErrorcode: ' + code)
+		exit(self.errors[code] + '\nErrorcode: ' + code + end_str)
 
 def check_input():
 	if len(sys.argv) > 1 and sys.argv[1] in commands:
