@@ -11,7 +11,7 @@ import os.path
 ips = ['192.168.100.1'] #add ips or mdns name of devices
 help_str = 'Please provide the information in the format:\nsecure.py [mode] [username] [password]\n\nmode\t\tenable/disable the login page\n\nusername\tthe username you want to use\n\npassword\tthe password you want to use'
 end_str = '\n\nIf you are having trouble, please visit https://github.com/Floplosion05/Shelly'
-errors = ['Failed to load Shelly.json, check the directory and path.', 'Wrong password entered.', 'Right hash but wrong password provided.', 'Found Shelly.json, but didnt find entry for this device']
+errors = ['Failed to load Shelly.json, check the directory and path.', 'Wrong password entered.', 'Right hash found but wrong password provided.', 'Found Shelly.json, but didnt find entry for this device']
 commands = ['disable', 'enable']
 
 class Shelly:
@@ -51,7 +51,7 @@ class Shelly:
 			if r.content.decode() == '401 Unauthorized':
 				self.error(2)
 			else:
-				print('Succesfull, saving the credentials')
+				print('Succesfully disabled the restricted-login')
 		else:
 			self.error(1)
 
