@@ -12,7 +12,7 @@ import os.path
 ips = ['floziroll'] #add ips or mdns name of devices
 help_str = 'Please provide the information in the format:\nsecure.py [mode] [username] [password]\n\nmode\t\tenable/disable the login page\n\nusername\tthe username you want to use\n\npassword\tthe password you want to use'
 end_str = '\n\nIf you are having trouble, please visit https://github.com/Floplosion05/Shelly'
-errors = ['Failed to load Shelly.json, check the directory and path.' + end_str, 'Wrong password entered' + end_str]
+errors = ['Failed to load Shelly.json, check the directory and path.' + end_str, 'Wrong password entered.' + end_str, 'Password doesnt match with the hash found in "Shelly.json".' + end_str, 'Right hash but wrong password provided.' + end_str]
 commands = ['disable', 'enable']
 
 class Shelly:
@@ -35,30 +35,34 @@ class Shelly:
 		r = requests.get('http://' + self.ip + '/settings/login?enabled=1&unprotected=0&username=' + self.username + '&password=' + self.password)
 		print('Enabling restricted login for ' + self.ip + ' with\nusername:\t' + self.username + '\npassword\t' + self.password + '\n')
 		if r.content.decode() == '401 Unauthorized':
-			print('Login already restricted')
+			print('Login already restricted\n')
 			self.changeAuth()
-			return
-		content_json = r.json()
-		if content_json['enabled'] and content_json['unprotected'] == False and content_json['username'] == self.username:
-			print('Succesfull, saving the credentials')
-			self.save()
+		else:
+			content_json = r.json()
+			if content_json['enabled'] and content_json['unprotected'] == False and content_json['username'] == self.username:
+				print('Succesfull, saving the credentials')
+				self.save()
 
 	def disable(self):
 		self.prev_username, self.prev_password_hash = self.load()
-		self.prev_password = input('Please enter your last password:\n')
-		if self.check_encrypted_password(self.prev_password, self.prev_password_hash):
-			r = requests.get('http://' + self.ip + '/settings/login?enabled=0&unprotected=1&username=""', auth=(self.prev_username, self.prev_password))
+		if self.check_encrypted_password(self.password, self.prev_password_hash):
+			r = requests.get('http://' + self.ip + '/settings/login?enabled=0&unprotected=1&username=""', auth=(self.username, self.password))
 			print('Disabled restricted login for ' + self.ip)
+			print(r.content.decode())
 		else:
-			self.error(1)
+			self.error(2)
 
 	def changeAuth(self):
 		self.prev_username, self.prev_password_hash = self.load()
 		self.prev_password = input('Please enter your last password:\n')
 		if self.check_encrypted_password(self.prev_password, self.prev_password_hash):
-			print('Changing authentification-credentials to:\nusername\t' + self.prev_username + '\npassword\t' + self.prev_password)
+			print('Changing authentification-credentials to:\nusername\t' + self.username + '\npassword\t' + self.password)
 			r = requests.get('http://' + self.ip + '/settings/login?enabled=1&username=' + self.username + '&password=' + self.password, auth=(self.prev_username, self.prev_password))
-			self.save()
+			if r.content.decode() == '401 Unauthorized':
+				self.error(3)
+			else:
+				print('Succesfull, saving the credentials')
+				self.save()
 		else:
 			self.error(1)
 
@@ -67,9 +71,7 @@ class Shelly:
 			with open('Shellys.json', 'r') as f:
 				self.data = json.load(f)
 				for device in self.data['devices']:
-					print('test')
 					if self.ip == device['ip']:
-						print('Device found')
 						return device['username'], device['password']
 		else:
 			self.error(0)
@@ -82,16 +84,19 @@ class Shelly:
 				self.data = json.load(f)
 				for device in self.data['devices']:
 					if self.ip == device['ip']:
-						return True
-				self.data['devices'].append({"ip":self.ip, "username":self.username, "password":self.hash})
-				print(self.data)
+						device['password'] = self.hash
+					else:
+						self.data['devices'].append({"ip":self.ip, "username":self.username, "password":self.hash})
+						print(self.data)
+			with open('Shellys.json', 'w') as f:
+				json.dump(self.data, f)
 		else:
 			print('File doesnt exist, creating now')
 			with open('Shellys.json', 'w') as f:
 				json.dump({"devices":[{"ip":self.ip, "username":self.username, "password":self.hash}]}, f)
 
 	def encrypt_password(self, password):
-		return self.pwd_context.encrypt(password)
+		return self.pwd_context.hash(password)
 
 	def check_encrypted_password(self, password, hashed):
 		return self.pwd_context.verify(password, hashed)
