@@ -1,9 +1,9 @@
-# At the moemnt this Script is nowhere near working/being complete, use at your own risk
+# At the moment this Script is nowhere near working/being complete, use at your own risk
 
 # Shelly
 Stuff based around the beautifull small electronic devices from Allterco
 
-### [Auto-Restrict-Login](Shelly/Scripts/Secure.py)
+### [Auto-Restrict-Login](Shelly/Scripts/secure.py)
 This Script queries trough a given number of ips or mdns names and restricts the http login with a given username and password
 
 ##### Usage
