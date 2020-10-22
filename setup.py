@@ -12,7 +12,7 @@ setuptools.setup(
     description="A test package for shelly devices",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    keywords='shelly login shelly-login'
+    keywords='shelly login shelly-login',
     url="https://github.com/Floplosion05/Shelly",
     packages=setuptools.find_packages(),
     classifiers=[
