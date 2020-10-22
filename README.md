@@ -33,5 +33,5 @@ python3 secure.py [mode] [username] [password]
 The Credentials-File (Shellys.json) is generated and then located in the same directory as the script.
 The structure is:
 ```
-{"devices": [{"ip": "192.168.100.1", "username": "test", "password": "$pbkdf2-sha256$30000$yZnzPqc0Rqi1NibEeM.5Fw$QZ0sk1Z6K4LMt3UM3AGrrKLk9jBOjwrXsY1psfAPY4Q"}, {"ip": "192.168.100.2", "username": "test", "password": "$pbkdf2-sha256$30000$yZnzPqc0Rqi1NibEeM.5Fw$QZ0sk1Z6K4LMt3UM3AGrrKLk9jBOjwrXsY1psfAPY4Q"}]}
+{"devices": [{"ip": "192.168.xxx.xxx", "username": "test", "password": "$pbkdf2-sha256$30000$yZnzPqc0Rqi1NibEeM.5Fw$QZ0sk1Z6K4LMt3UM3AGrrKLk9jBOjwrXsY1psfAPY4Q"}, {"ip": "192.168.xxx.xxx", "username": "test", "password": "$pbkdf2-sha256$30000$yZnzPqc0Rqi1NibEeM.5Fw$QZ0sk1Z6K4LMt3UM3AGrrKLk9jBOjwrXsY1psfAPY4Q"}]}
 ```
