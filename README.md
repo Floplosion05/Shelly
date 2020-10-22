@@ -12,7 +12,7 @@ This Script queries trough a given number of ips or mdns names and restricts the
 ```
 pip install shelly-restrict-login-page
 ```
-2.1 manually via git clone
+2 manually via git clone
 Clone or download this repository first and run:
 ```
 (python3 -m) pip install -r ./requirements.txt
