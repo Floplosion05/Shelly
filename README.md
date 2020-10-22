@@ -23,6 +23,10 @@ Clone or download this repository first and run:
 Please enter your ips seperated with a comma as the fourth parameter
 ```
 shelly-restrict-login [mode] [username] [password] [ip1,ip2,..]
+  mode      enable/disable
+  username  the username you want to use
+  password  the password you want to use
+  ips       the ip(s) of the shelly device(s), seperated by a comma
 ```
 
 2. When it was installed manually:
@@ -30,6 +34,8 @@ shelly-restrict-login [mode] [username] [password] [ip1,ip2,..]
 ```
 python3 secure.py [mode] [username] [password]
   mode  enable/disable
+  username  the username you want to use
+  password  the password you want to use
 ```
 
 ##### Error-Codes
