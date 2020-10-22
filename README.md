@@ -12,6 +12,10 @@ To use the Script(s) run:
 (python3 -m) pip install requests
 (python3 -m) pip install passlib
 ```
+or just:
+```
+(python3 -m) pip install -r ./requirements.txt
+```
 Then clone or download this repository and run the script(s)
 
 ##### Usage
