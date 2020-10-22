@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 import _io
 import os.path
 
-ips = ['192.168.100.1', '192.168.100.2'] #add ips or mdns names of devices
+ips = ['floziroll'] #add ips or mdns names of devices
 help_str = 'Please provide the information in the format:\nsecure.py [mode] [username] [password]\n\nmode\t\tenable/disable the login page\n\nusername\tthe username you want to use\n\npassword\tthe password you want to use'
 end_str = '\n\nIf you are having trouble, please visit https://github.com/Floplosion05/Shelly'
 errors = ['Failed to load Shelly.json, check the directory and path.', 'Wrong password entered.', 'Right hash found but wrong password provided.', 'Found Shelly.json, but didnt find entry for this device']
@@ -88,13 +88,19 @@ class Shelly:
 				self.data = json.load(f)
 				for device in self.data['devices']:
 					if self.ip == device['ip']:
+						print('Device already exists in Credentials-File, overwriting')
 						device['username'] = self.username
 						device['password'] = self.hash
-					else:
-						self.data['devices'].append({"ip":self.ip, "username":self.username, "password":self.hash})
-						print(self.data)
-			with open('Shellys.json', 'w') as f:
-				json.dump(self.data, f)
+						with open('Shellys.json', 'w') as f:
+							json.dump(self.data, f)
+						return True
+
+				print('Device doesnt exist in Credentials-File, appending')
+				self.data['devices'].append({"ip":self.ip, "username":self.username, "password":self.hash})
+				print(self.data)
+				with open('Shellys.json', 'w') as f:
+					json.dump(self.data, f)
+				return True
 		else:
 			print('File doesnt exist, creating now')
 			with open('Shellys.json', 'w') as f:
