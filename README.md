@@ -12,21 +12,23 @@ To use the Script(s) run:
 (python3 -m) pip install requests
 (python3 -m) pip install passlib
 ```
-or just:
+Then clone or download this repository.
+
+Or just clone or download this repository first and run:
 ```
 (python3 -m) pip install -r ./requirements.txt
 ```
-Then clone or download this repository and run the script(s)
 
 ##### Usage
 To use the script run:
-1. **Don't** forget to change the ip/mdns range in line **[12](https://github.com/Floplosion05/Shelly/blob/1bb07f124326b38dcee3988aaf8065b9076dca41/Scripts/secure.py#L12)**
-2. When a login page is already restricted you will be prompted to provide the old password
-3. The Script will automatically generate a file called Shelly.json in the same directory as the script, to store the last username and the hash of the last password.
 ```
 python3 secure.py [mode] [username] [password]
   mode  enable/disable
 ```
+1. **Don't** forget to change the ip/mdns range in line **[12](https://github.com/Floplosion05/Shelly/blob/1bb07f124326b38dcee3988aaf8065b9076dca41/Scripts/secure.py#L12)**
+2. When a login page is already restricted you will be prompted to provide the old password
+3. The Script will automatically generate a file called Shelly.json in the same directory as the script, to store the last username and the hash of the last password.
+
 ##### Error-Codes
   - 0: Failed to load Shelly.json, check the directory and path. (The script cant find the [Credentials-File](https://github.com/Floplosion05/Shelly/blob/main/README.md#credentials-file))
   - 1: Wrong password entered. (The provided password doesnt match with the saved hash)
