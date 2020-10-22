@@ -116,16 +116,9 @@ class Shelly:
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
 
 def check_input():
-	if len(sys.argv) > 1 and sys.argv[1] in commands:
-		if len(sys.argv) == 2:
-			for ip in ips:
-				ips[ips.index(ip)] = Shelly(ip, sys.argv[1], '', '', errors)
-		elif len(sys.argv) == 4:
-			for ip in ips:
-				ips[ips.index(ip)] = Shelly(ip, sys.argv[1], sys.argv[2], sys.argv[3], errors)
-		else:
-			print(help_str)
-			quit()
+	if len(sys.argv) == 4 and 1 <= len(sys.argv[2]) <= 50 and 1 <= len(sys.argv[3]) <= 50 and sys.argv[1] in commands:
+		for ip in ips:
+			ips[ips.index(ip)] = Shelly(ip, sys.argv[1], sys.argv[2], sys.argv[3], errors)
 	else:
 		print(help_str)
 		quit()
