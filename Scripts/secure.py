@@ -8,7 +8,7 @@ from passlib.context import CryptContext
 import _io
 import os.path
 
-ips = ['floziroll'] #add ips or mdns names of devices
+ips = ['192.168.xxx.xxx'] #add ips or mdns names of devices
 help_str = 'Please provide the information in the format:\nsecure.py [mode] [username] [password]\n\nmode\t\tenable/disable the login page\n\nusername\tthe username you want to use\n\npassword\tthe password you want to use'
 end_str = '\n\nIf you are having trouble, please visit https://github.com/Floplosion05/Shelly'
 errors = ['Failed to load Shelly.json, check the directory and path.', 'Wrong password entered.', 'Right hash found but wrong password provided.', 'Found Shelly.json, but didnt find entry for this device']
