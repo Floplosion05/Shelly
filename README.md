@@ -3,7 +3,7 @@
 # Shelly
 Stuff based around the beautifull small electronic devices from Allterco
 
-### [Auto-Restrict-Login](Scripts/secure.py)
+### [Secure](Scripts/secure.py)
 This Script queries trough a given number of ips or mdns names and restricts the http login with a given username and password
 
 ##### Installation
