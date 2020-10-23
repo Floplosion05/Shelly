@@ -27,8 +27,7 @@ class Shelly25:
 		self.errors = errors
 
 	def go(self, device):
-			
-			r = requests.get()
+		r = requests.get(device['url'].format(self.ip, self.channel, self.command))
 		pass
 
 	def pos(self, device):
