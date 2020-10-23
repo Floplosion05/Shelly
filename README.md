@@ -10,7 +10,7 @@ This Script queries trough a given number of ips or mdns names and restricts the
 ###### Following installations are possible:
 1. automatically via pip:
 ```
-pip install shelly-restrict-login-page
+pip install shelly-restrict
 ```
 2. manually via git clone
 Clone or download this repository first and run:
@@ -22,7 +22,7 @@ Clone or download this repository first and run:
 1. When it was installed auomatically:
 Please enter your ips seperated with a comma as the fourth parameter
 ```
-shelly-restrict-login [mode] [username] [password] [ip1,ip2,..]
+shelly-restrict [mode] [username] [password] [ip1,ip2,..]
   mode      enable/disable
   username  the username you want to use
   password  the password you want to use
