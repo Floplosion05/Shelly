@@ -6,7 +6,7 @@ end_str = '\n\nIf you are having trouble, please visit https://github.com/Floplo
 errors = []
 
 shelly25_relay = {'url' : 'http://{0}/relay/{1}?{2}', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : [0]}
-shelly25_roller = {'url' : 'http://{0}/roller/{1}?{2}', 'commands' : {'move' : ['open', 'stop', 'close'], 'pos' : ['to_pos']}, 'channel' : [0, 1]}
+shelly25_roller = {'url' : 'http://{0}/roller/{1}?{2}', 'commands' : {'go' : ['open', 'stop', 'close'], 'pos' : ['to_pos']}, 'channel' : [0, 1]}
 shelly_dimmer = {'url' : 'http://{0}/light/{1}?{2}', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'bright' : ['brightness'], 'time' : ['timer']}, 'channel' : [0]}
 
 class Shelly25_roller:
@@ -16,7 +16,7 @@ class Shelly25_roller:
 		self.errors = errors
 
 	def go(self, command, value = None, channel = 0):
-		if (command in shelly25_roller['commands']['move'] and channel in shelly25_roller['channel']):
+		if (command in shelly25_roller['commands']['go'] and channel in shelly25_roller['channel']):
 			if (value == None):
 				r = requests.get(shelly25_roller['url'].format(self.ip, str(channel), 'go=' + command))
 				print(r.content.decode())
@@ -66,14 +66,14 @@ class Shelly25_relay:
 		self.ip = ip
 		self.errors = errors
 
-	def turn(self, command, channel, time = None):
+	def turn(self, command, channel = 0, time = None):
 		if (time == None):
 			if (command in shelly25_relay['commands']['turn'] and channel in shelly25_relay['channel']):
 				r = requests.get(shelly25_roller['url'].format(self.ip, channel, ''))
 				print(r.content.decode())
 		else:
 			try:
-				if (1 <= time <= 120):
+				if (0 <= time <= 120):
 					r = requests.get(shelly25_roller['url'].format(self.ip, str(channel), 'turn=' + command + '&timer=' + str(time)))
 					print(r.content.decode())
 			except Exception as ex:
@@ -92,12 +92,27 @@ class Shelly_dimmer:
 		self.ip = ip
 		self.errors = errors
 
-	def turn(self, command, ):
-		if (command in shelly_dimmer['commands'][command]):
-			pass
-
-	def brightness(self):
-		pass
+	def turn(self, command, brightness = None, channel = 0):
+		if (brightness == None):
+			if (command in shelly_dimmer['commands'][command]):
+				r = requests.get(shelly_dimmer['url'].format(self.ip, str(channel), 'turn=' + command))
+		else:
+			try:
+				if (0 <= brightness <= 100):
+					r = requests.get(shelly_dimmer['url'].format(self.ip, str(channel), 'turn=' + command + '&brightness=' + str(brightness)))
+					print(r.content.decode())
+			except Exception as ex:
+				print('Failed with output: ' + str(ex))
+				print(r.content.decode())
+	
+	def brightness(self, brightness, channel = 0):
+		try:
+			if (0 <= brightness <= 100):
+				r = requests.get(shelly_dimmer['url'].format(self.ip, str(channel), 'brightness=' + str(brightness)))
+				print(r.content.decode())
+		except Exception as ex:
+			print('Failed with output: ' + str(ex))
+			print(r.content.decode())
 
 	def get_attr(self, attr):
 		pass
@@ -105,7 +120,15 @@ class Shelly_dimmer:
 	def error(self, code):
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
 
+class shelly_plug:
+
+	def __init__(self, ip):
+		self.ip = ip
+		self.errors = errors
+
+	def turn(self, command):
+		pass
 
 if __name__ == '__main__':
-	s = Shelly25_roller('192.168.xxx.xxx')
-	s.go('to_pos', 100)
+	s = Shelly_dimmer('192.168.100.123')
+	s.turn('toggle', 10)
