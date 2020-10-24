@@ -7,6 +7,7 @@ errors = []
 
 shelly25_relay = {'url' : 'http://{0}/relay/{1}?{2}', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : [0]}
 shelly25_roller = {'url' : 'http://{0}/roller/{1}?{2}', 'commands' : {'move' : ['open', 'stop', 'close'], 'pos' : ['to_pos']}, 'channel' : [0, 1]}
+shelly_dimmer = {'url' : 'http://{0}/light/{1}?{2}', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'bright' : ['brightness'], 'time' : ['timer']}, 'channel' : [0]}
 
 class Shelly25_roller:
 
@@ -53,6 +54,9 @@ class Shelly25_roller:
 			r = requests.get(shelly25_roller['url'].format(self.ip, '0/calibrate', ''))
 			print(r.content.decode())
 
+	def get_attr(self, attr):
+		pass
+
 	def error(self, code):
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
 
@@ -75,9 +79,32 @@ class Shelly25_relay:
 			except Exception as ex:
 				print('Failed with output: ' + str(ex))
 				print(r.content.decode())
+
+	def get_attr(self, attr):
+		pass
 	
 	def error(self, code):
+		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
+
+class Shelly_dimmer:
+	
+	def __init__(self, ip):
+		self.ip = ip
+		self.errors = errors
+
+	def turn(self, command, ):
+		if (command in shelly_dimmer['commands'][command]):
+			pass
+
+	def brightness(self):
 		pass
+
+	def get_attr(self, attr):
+		pass
+
+	def error(self, code):
+		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
+
 
 if __name__ == '__main__':
 	s = Shelly25_roller('192.168.xxx.xxx')
