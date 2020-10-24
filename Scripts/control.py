@@ -5,56 +5,79 @@ import json
 end_str = '\n\nIf you are having trouble, please visit https://github.com/Floplosion05/Shelly'
 errors = []
 
-#shelly25_relay = {'url' : 'http://{0}/relay/{1}?{2}', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'timer' : None}}
-shelly25_roller = {'url' : 'http://{0}/roller/{1}?{2}', 'commands' : {'move' : ['open', 'stop', 'close'], 'pos' : ['to_pos']}}
+shelly25_relay = {'url' : 'http://{0}/relay/{1}?{2}', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : [0]}
+shelly25_roller = {'url' : 'http://{0}/roller/{1}?{2}', 'commands' : {'move' : ['open', 'stop', 'close'], 'pos' : ['to_pos']}, 'channel' : [0, 1]}
 
 class Shelly25_roller:
 
 	def __init__(self, ip):
-		self.type = type
 		self.ip = ip
 		self.errors = errors
 
 	def go(self, command, value = None, channel = 0):
-		if (command in shelly25_roller['commands']['move']):
+		if (command in shelly25_roller['commands']['move'] and channel in shelly25_roller['channel']):
 			if (value == None):
-				r = requests.get(shelly25_roller['url'].format(self.ip, channel, 'go=' + command))
+				r = requests.get(shelly25_roller['url'].format(self.ip, str(channel), 'go=' + command))
 				print(r.content.decode())
 			elif (value != None):
 				try:
 					if (1 <= value <= 120):
-						r = requests.get(shelly25_roller['url'].format(self.ip, channel, 'turn=' + command + '&duration=' + str(value)))
+						r = requests.get(shelly25_roller['url'].format(self.ip, str(channel), 'turn=' + command + '&duration=' + str(value)))
 						print(r.content.decode())
 				except Exception as ex:
 					print('Failed with output: ' + str(ex))
 					print(r.content.decode())
 
-		elif (command in shelly25_roller['commands']['pos']):
-				r = requests.get(shelly25_roller['url'].format(self.ip, channel, ''))
+		elif (command in shelly25_roller['commands']['pos'] and channel in shelly25_relay['channel']):
+				r = requests.get(shelly25_roller['url'].format(self.ip, str(channel), ''))
 				try:
 					if (r.json()['positioning'] == True):
 						try:
 							if (1 <= value <= 100):
-								r = requests.get(shelly25_roller['url'].format(self.ip, channel, 'go=' + command + '&roller_pos=' + str(value)))
+								r = requests.get(shelly25_roller['url'].format(self.ip, str(channel), 'go=' + command + '&roller_pos=' + str(value)))
 								print(r.content.decode())
 						except Exception as ex:
 							print('Failed with output: ' + str(ex))
 							print(r.content.decode())
 					else:
-						print('Device isnt calibrated, to calibrate use:\nx = Shelly25_roller\nx.calibrate()')
+						print('Device isnt calibrated, to calibrate use:\nx = Shelly25_roller\nx.calibrate(0)')
 				except Exception as ex:
 					print('Failed with output: ' + str(ex))
 					print(r.content.decode())
 
 		else:
-			print('Didnt recognise command: ' + command)
+			print('Didnt recognise command: ' + command + ' on channel ' + str(channel))
 
-	def calibrate(self):
-		r = requests.get(shelly25_roller['url'].format(self.ip, '0/calibrate', ''))
-		print(r.content.decode())
+	def calibrate(self, channel):
+		if (channel in shelly25_relay['channel']):
+			r = requests.get(shelly25_roller['url'].format(self.ip, '0/calibrate', ''))
+			print(r.content.decode())
 
 	def error(self, code):
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
+
+class Shelly25_relay:
+
+	def __init__(self, ip):
+		self.ip = ip
+		self.errors = errors
+
+	def turn(self, command, channel, time = None):
+		if (time == None):
+			if (command in shelly25_relay['commands']['turn'] and channel in shelly25_relay['channel']):
+				r = requests.get(shelly25_roller['url'].format(self.ip, channel, ''))
+				print(r.content.decode())
+		else:
+			try:
+				if (1 <= time <= 120):
+					r = requests.get(shelly25_roller['url'].format(self.ip, str(channel), 'turn=' + command + '&timer=' + str(time)))
+					print(r.content.decode())
+			except Exception as ex:
+				print('Failed with output: ' + str(ex))
+				print(r.content.decode())
+	
+	def error(self, code):
+		pass
 
 if __name__ == '__main__':
 	s = Shelly25_roller('192.168.xxx.xxx')
