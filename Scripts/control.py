@@ -5,17 +5,17 @@ import json
 end_str = '\n\nIf you are having trouble, please visit https://github.com/Floplosion05/Shelly'
 errors = []
 
-shelly25_relay = {'url' : 'http://{0}/relay/{1}?{2}', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : [0], 'attributes' : ['current_pos', 'state', 'power', 'is_valid', 'safety_switch', 'overtemperature', 'stop_reason', 'last_direction', '']}
+shelly25_relay = {'url' : 'http://{0}/relay/{1}?{2}', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : [0], 'attributes' : ['state', 'power', 'is_valid', 'safety_switch', 'overtemperature', 'stop_reason', 'last_direction', 'current_pos', 'calibrating', 'positioning']}
 shelly25_roller = {'url' : 'http://{0}/roller/{1}?{2}', 'commands' : {'go' : ['open', 'stop', 'close'], 'pos' : ['to_pos']}, 'channel' : [0, 1]}
 shelly_dimmer = {'url' : 'http://{0}/light/{1}?{2}', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'bright' : ['brightness'], 'time' : ['timer']}, 'channel' : [0]}
 
 class Shelly25_roller:
 
-	def __init__(self, ip):
+	def __init__(self, ip : str):
 		self.ip = ip
 		self.errors = errors
 
-	def go(self, command, value = None, channel = 0):
+	def go(self, command : str, value : int = None, channel : int = 0):
 		if (command in shelly25_roller['commands']['go'] and channel in shelly25_roller['channel']):
 			if (value == None):
 				r = requests.get(shelly25_roller['url'].format(self.ip, str(channel), 'go=' + command))
@@ -23,13 +23,12 @@ class Shelly25_roller:
 			elif (value != None):
 				try:
 					if (1 <= value <= 120):
-						r = requests.get(shelly25_roller['url'].format(self.ip, str(channel), 'turn=' + command + '&duration=' + str(value)))
+						r = requests.get(shelly25_roller['url'].format(self.ip, str(channel), 'go=' + command + '&duration=' + str(value)))
 						print(r.content.decode())
 				except Exception as ex:
 					print('Failed with output: ' + str(ex))
-					print(r.content.decode())
 
-		elif (command in shelly25_roller['commands']['pos'] and channel in shelly25_relay['channel']):
+		elif (command in shelly25_roller['commands']['pos'] and channel in shelly25_roller['channel']):
 				r = requests.get(shelly25_roller['url'].format(self.ip, str(channel), ''))
 				try:
 					if (r.json()['positioning'] == True):
@@ -39,7 +38,6 @@ class Shelly25_roller:
 								print(r.content.decode())
 						except Exception as ex:
 							print('Failed with output: ' + str(ex))
-							print(r.content.decode())
 					else:
 						print('Device isnt calibrated, to calibrate use:\nx = Shelly25_roller\nx.calibrate(0)')
 				except Exception as ex:
@@ -49,12 +47,12 @@ class Shelly25_roller:
 		else:
 			print('Didnt recognise command: ' + command + ' on channel ' + str(channel))
 
-	def calibrate(self, channel):
+	def calibrate(self, channel : int = 0):
 		if (channel in shelly25_relay['channel']):
-			r = requests.get(shelly25_roller['url'].format(self.ip, '0/calibrate', ''))
+			r = requests.get(shelly25_roller['url'].format(self.ip, str(channel) + '/calibrate', ''))
 			print(r.content.decode())
 
-	def get_attr(self, attr):
+	def get_attr(self, attr : str):
 		if (attr in shelly25_relay['attributes']):
 			r = requests.get(shelly25_roller['url'].format(self.ip, '0', ''))
 			return r.json()[attr]
@@ -64,11 +62,11 @@ class Shelly25_roller:
 
 class Shelly25_relay:
 
-	def __init__(self, ip):
+	def __init__(self, ip : str):
 		self.ip = ip
 		self.errors = errors
 
-	def turn(self, command, channel = 0, time = None):
+	def turn(self, command : str, channel : int = 0, time : int = None):
 		if (time == None):
 			if (command in shelly25_relay['commands']['turn'] and channel in shelly25_relay['channel']):
 				r = requests.get(shelly25_roller['url'].format(self.ip, channel, ''))
@@ -82,7 +80,7 @@ class Shelly25_relay:
 				print('Failed with output: ' + str(ex))
 				print(r.content.decode())
 
-	def get_attr(self, attr):
+	def get_attr(self, attr : str):
 		if (attr in shelly25_relay['attributes']):
 			r = requests.get(shelly25_roller['url'].format(self.ip, '0', ''))
 			return r.json()[attr]
@@ -92,11 +90,11 @@ class Shelly25_relay:
 
 class Shelly_dimmer:
 	
-	def __init__(self, ip):
+	def __init__(self, ip : str):
 		self.ip = ip
 		self.errors = errors
 
-	def turn(self, command, brightness = None, channel = 0):
+	def turn(self, command : str, brightness : int = None, channel : int = 0):
 		if (brightness == None):
 			if (command in shelly_dimmer['commands'][command]):
 				r = requests.get(shelly_dimmer['url'].format(self.ip, str(channel), 'turn=' + command))
@@ -109,7 +107,7 @@ class Shelly_dimmer:
 				print('Failed with output: ' + str(ex))
 				print(r.content.decode())
 	
-	def brightness(self, brightness, channel = 0):
+	def brightness(self, brightness : int, channel : int = 0):
 		try:
 			if (0 <= brightness <= 100):
 				r = requests.get(shelly_dimmer['url'].format(self.ip, str(channel), 'brightness=' + str(brightness)))
@@ -118,7 +116,7 @@ class Shelly_dimmer:
 			print('Failed with output: ' + str(ex))
 			print(r.content.decode())
 
-	def get_attr(self, attr):
+	def get_attr(self, attr : str):
 		if (attr in shelly25_relay['attributes']):
 			r = requests.get(shelly25_roller['url'].format(self.ip, '0', ''))
 			return r.json()[attr]
@@ -128,13 +126,18 @@ class Shelly_dimmer:
 
 class shelly_plug:
 
-	def __init__(self, ip):
+	def __init__(self, ip : str):
 		self.ip = ip
 		self.errors = errors
 
-	def turn(self, command):
+	def turn(self, command : str):
 		pass
+
+	def get_attr(self, attr : str):
+		if (attr in shelly25_relay['attributes']):
+			r = requests.get(shelly25_roller['url'].format(self.ip, '0', ''))
+			return r.json()[attr]
 
 if __name__ == '__main__':
 	s = Shelly25_roller('192.168.100.74')
-	print(s.get_attr('current_pos'))
+	s.go('open', 2)
