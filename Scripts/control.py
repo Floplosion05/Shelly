@@ -5,7 +5,7 @@ import json
 end_str = '\n\nIf you are having trouble, please visit https://github.com/Floplosion05/Shelly'
 errors = []
 
-shelly25_relay = {'url' : 'http://{0}/relay/{1}?{2}', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : [0]}
+shelly25_relay = {'url' : 'http://{0}/relay/{1}?{2}', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : [0], 'attributes' : ['current_pos', 'state', 'power', 'is_valid', 'safety_switch', 'overtemperature', 'stop_reason', 'last_direction', '']}
 shelly25_roller = {'url' : 'http://{0}/roller/{1}?{2}', 'commands' : {'go' : ['open', 'stop', 'close'], 'pos' : ['to_pos']}, 'channel' : [0, 1]}
 shelly_dimmer = {'url' : 'http://{0}/light/{1}?{2}', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'bright' : ['brightness'], 'time' : ['timer']}, 'channel' : [0]}
 
@@ -55,7 +55,9 @@ class Shelly25_roller:
 			print(r.content.decode())
 
 	def get_attr(self, attr):
-		pass
+		if (attr in shelly25_relay['attributes']):
+			r = requests.get(shelly25_roller['url'].format(self.ip, '0', ''))
+			return r.json()[attr]
 
 	def error(self, code):
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
@@ -130,5 +132,5 @@ class shelly_plug:
 		pass
 
 if __name__ == '__main__':
-	s = Shelly_dimmer('192.168.100.123')
-	s.turn('toggle', 10)
+	s = Shelly25_roller('192.168.100.74')
+	print(s.get_attr('current_pos'))
