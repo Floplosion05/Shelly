@@ -83,7 +83,9 @@ class Shelly25_relay:
 				print(r.content.decode())
 
 	def get_attr(self, attr):
-		pass
+		if (attr in shelly25_relay['attributes']):
+			r = requests.get(shelly25_roller['url'].format(self.ip, '0', ''))
+			return r.json()[attr]
 	
 	def error(self, code):
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
@@ -117,7 +119,9 @@ class Shelly_dimmer:
 			print(r.content.decode())
 
 	def get_attr(self, attr):
-		pass
+		if (attr in shelly25_relay['attributes']):
+			r = requests.get(shelly25_roller['url'].format(self.ip, '0', ''))
+			return r.json()[attr]
 
 	def error(self, code):
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
