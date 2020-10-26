@@ -30,7 +30,7 @@ shelly-restrict [mode] [username] [password] [ip1,ip2,..]
 ```
 
 2. When it was installed manually:
-**Don't** forget to change the ip/mdns range in line [12](Scripts/secure.py#L12) **[12](https://github.com/Floplosion05/Shelly/blob/1bb07f124326b38dcee3988aaf8065b9076dca41/Scripts/secure.py#L12)**
+**Don't** forget to change the ip/mdns range in line **[12](Scripts/secure.py#L12)**
 ```
 python3 secure.py [mode] [username] [password]
   mode  enable/disable
