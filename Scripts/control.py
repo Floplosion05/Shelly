@@ -108,15 +108,31 @@ class Shelly_dimmer:
 	def turn(self, command : str, brightness : int = None, time : int = None, channel : str = '0'):
 		if (command in self.device['commands']['turn'] and channel in self.device['channel']):
 			if (brightness == None):
-				r = requests.get(self.device['url'].format(self.ip, channel, 'turn=' + command))
-				print(r.content.decode())
+				if (time == None):
+					r = requests.get(self.device['url'].format(self.ip, channel, 'turn=' + command))
+					print(r.content.decode())
+				else:
+					try:
+						if (0 <= time <= 120):
+							r = requests.get(self.device['url'].format(self.ip, channel, 'turn=' + command + '&timer=' + str(time)))
+							print(r.content.decode())
+					except Exception as ex:
+						print('Failed with output: ' + str(ex))
 			else:
-				try:
-					if (0 <= brightness <= 100):
-						r = requests.get(self.device['url'].format(self.ip, channel, 'turn=' + command + '&brightness=' + str(brightness)))
-						print(r.content.decode())
-				except Exception as ex:
-					print('Failed with output: ' + str(ex))
+				if (time == None):
+					try:
+						if (0 <= brightness <= 100):
+							r = requests.get(self.device['url'].format(self.ip, channel, 'turn=' + command + '&brightness=' + str(brightness)))
+							print(r.content.decode())
+					except Exception as ex:
+						print('Failed with output: ' + str(ex))
+				else:
+					try:
+						if (0 <= time <= 120 and 0 <= brightness <= 120):
+							r = requests.get(self.device['url'].format(self.ip, channel, 'turn=' + command + '&brightness=' + str(brightness) + '&timer=' + str(time)))
+							print(r.content.decode())
+					except Exception as ex:
+						print('Failed with output: ' + str(ex))
 	
 	def brightness(self, brightness : int, channel : str = '0'):
 		try:
@@ -171,5 +187,5 @@ class Shelly_plug:
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
 
 if __name__ == '__main__':
-	s = Shelly25_roller('192.168.100.74')
-	s.go('open', 2)
+	s = Shelly_dimmer('192.168.100.123')
+	s.turn('on', 50, 5)
