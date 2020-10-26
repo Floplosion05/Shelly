@@ -20,6 +20,7 @@ Clone or download this repository first and run:
 
 ##### Usage
 1. When it was installed auomatically:
+
 Please enter your ips seperated with a comma as the fourth parameter
 ```
 shelly-restrict [mode] [username] [password] [ip1,ip2,..]
@@ -30,7 +31,12 @@ shelly-restrict [mode] [username] [password] [ip1,ip2,..]
 ```
 
 2. When it was installed manually:
+
 **Don't** forget to change the ip/mdns range in line **[12](Scripts/secure.py#L12)**
+```
+ips = ['192.168.xxx.xxx'] #add ips or mdns names of devices
+```
+Then:
 ```
 python3 secure.py [mode] [username] [password]
   mode  enable/disable
