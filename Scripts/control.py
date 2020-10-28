@@ -185,6 +185,9 @@ class Shelly_plug:
 
 	def error(self, code):
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
+class Shelly1:
+
+	def __init__(self, ip):
 
 if __name__ == '__main__':
 	s = Shelly_dimmer('192.168.100.123')
