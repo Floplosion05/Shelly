@@ -138,7 +138,7 @@ class Shelly_dimmer:
 	
 	def brightness(self, brightness : int, channel : str = '0'):
 		try:
-			if (0 <= brightness <= 100):w
+			if (0 <= brightness <= 100):
 				r = requests.get(self.device['url'].format(self.ip, channel, 'brightness=' + str(brightness)))
 				print(r.content.decode())
 		except Exception as ex:
