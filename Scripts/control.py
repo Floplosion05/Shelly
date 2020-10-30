@@ -5,10 +5,12 @@ import json
 end_str = '\n\nIf you are having trouble, please visit https://github.com/Floplosion05/Shelly'
 errors = []
 
-shelly25_relay = {'url' : 'http://{0}/relay/{1}?{2}', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'overtemperature', 'is_valid', 'source']}
-shelly25_roller = {'url' : 'http://{0}/roller/{1}?{2}', 'commands' : {'go' : ['open', 'stop', 'close'], 'pos' : ['to_pos']}, 'channel' : ['0', '1'], 'attributes' : ['state', 'power', 'is_valid', 'safety_switch', 'overtemperature', 'stop_reason', 'last_direction', 'current_pos', 'calibrating', 'positioning']}
-shelly_dimmer = {'url' : 'http://{0}/light/{1}?{2}', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'bright' : ['brightness'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'mode', 'brightness']}
-shelly_plug = {'url' : 'http://{0}/relay/{1}?{2}', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', '	overpower', 'source']}
+url = 'http://{0}/relay/{1}?{2}'
+shelly25_relay = {'url' : url, 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'overtemperature', 'is_valid', 'source']}
+shelly25_roller = {'url' : url, 'commands' : {'go' : ['open', 'stop', 'close'], 'pos' : ['to_pos']}, 'channel' : ['0', '1'], 'attributes' : ['state', 'power', 'is_valid', 'safety_switch', 'overtemperature', 'stop_reason', 'last_direction', 'current_pos', 'calibrating', 'positioning']}
+shelly_dimmer = {'url' : url, 'commands' : {'turn' : ['on', 'off', 'toggle'], 'bright' : ['brightness'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'mode', 'brightness']}
+shelly_plug = {'url' : url, 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'overpower', 'source']}
+shelly1 = {'url' : url, 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'overpower', 'source']}
 
 class Shelly25_roller:
 
@@ -136,7 +138,7 @@ class Shelly_dimmer:
 	
 	def brightness(self, brightness : int, channel : str = '0'):
 		try:
-			if (0 <= brightness <= 100):
+			if (0 <= brightness <= 100):w
 				r = requests.get(self.device['url'].format(self.ip, channel, 'brightness=' + str(brightness)))
 				print(r.content.decode())
 		except Exception as ex:
@@ -185,9 +187,35 @@ class Shelly_plug:
 
 	def error(self, code):
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
+
 class Shelly1:
 
 	def __init__(self, ip):
+		self.ip = ip
+		self.errors = errors
+		self.device = shelly1
+
+	def turn(self, command : str, time : int = None, channel : str = '0'):
+		if (time == None):
+			if (command in self.device['commands']['turn']):
+				r = requests.get(self.device['url'].format(self.ip, channel, 'turn=' + command))
+				print(r.content.decode())
+		else:
+			try:
+				if (0 <= time <= 120):
+					r = requests.get(self.device['url'].format(self.ip, channel, 'turn=' + command + '&timer=' + str(time)))
+					print(r.content.decode())
+			except Exception as ex:
+				print('Failed with output: ' + str(ex))
+
+	def get_attr(self, attr : str, channel : str = '0'):
+		if (channel in self.device['channel']):
+			if (attr in self.device['attributes']):
+				r = requests.get(self.device['url'].format(self.ip, '0', ''))
+				return r.json()[attr]
+			elif (attr == 'all'):
+				r = requests.get(self.device['url'].format(self.ip, channel, ''))
+				return r.json()
 
 if __name__ == '__main__':
 	s = Shelly_dimmer('192.168.100.123')
