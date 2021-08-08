@@ -1,16 +1,18 @@
 import requests
 from requests.auth import HTTPBasicAuth
 import json
+from bs4 import BeautifulSoup
 
 end_str = '\n\nIf you are having trouble, please visit https://github.com/Floplosion05/Shelly'
-errors = []
+errors = ['Ip could not be reached', 'Device Type does not match']
 
 url = 'http://{ip}/{type}/{channel}?{command}'
-shelly25_relay = {'url' : url.format(ip = '{ip}', type = 'relay', channel = '{channel}', command = '{command}'), 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'overtemperature', 'is_valid', 'source']}
-shelly25_roller = {'url' : url.format(ip = '{ip}', type = 'roller', channel = '{channel}', command = '{command}'), 'commands' : {'go' : ['open', 'stop', 'close'], 'pos' : ['to_pos']}, 'channel' : ['0', '1'], 'attributes' : ['state', 'power', 'is_valid', 'safety_switch', 'overtemperature', 'stop_reason', 'last_direction', 'current_pos', 'calibrating', 'positioning']}
-shelly_dimmer = {'url' : url.format(ip = '{ip}', type = 'light', channel = '{channel}', command = '{command}'), 'commands' : {'turn' : ['on', 'off', 'toggle'], 'bright' : ['brightness'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'mode', 'brightness']}
-shelly_plug = {'url' : url.format(ip = '{ip}', type = 'relay', channel = '{channel}', command = '{command}'), 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'overpower', 'source']}
-shelly1 = {'url' : url.format(ip = '{ip}', type = 'relay', channel = '{channel}', command = '{command}'), 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'overpower', 'source']}
+shelly25_relay = {'url' : url, 'type' : 'relays', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'overtemperature', 'is_valid', 'source']}
+shelly25_roller = {'url' : url, 'type' : 'rollers', 'commands' : {'go' : ['open', 'stop', 'close'], 'pos' : ['to_pos']}, 'channel' : ['0', '1'], 'attributes' : ['state', 'power', 'is_valid', 'safety_switch', 'overtemperature', 'stop_reason', 'last_direction', 'current_pos', 'calibrating', 'positioning']}
+shelly_dimmer = {'url' : url, 'type' : 'lights', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'bright' : ['brightness'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'mode', 'brightness']}
+shelly_plug = {'url' : url, 'type' : 'relays', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'overpower', 'source']}
+shelly1 = {'url' : url, 'type' : 'relays', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'overpower', 'source']}
+shellys = {'shelly25_relay' : shelly25_relay, 'shelly25_roller' : shelly25_roller, 'shelly_dimmer' : shelly_dimmer, 'shelly_plug' : shelly_plug, 'shelly1' : shelly1}
 
 class Shelly25_roller:
 
@@ -18,6 +20,27 @@ class Shelly25_roller:
 		self.ip = ip
 		self.errors = errors
 		self.device = shelly25_roller
+		self.type = 'shelly25_roller'
+		self.check_device()
+		self.device['url'] = self.device['url'].format(ip = '{ip}', type = 'roller', channel = '{channel}', command = '{command}')
+
+	def check_device(self):
+		r = requests.get(self.device['url'].format(ip = self.ip, type = 'status', channel = '', command = '')[:-2])
+		if (r.status_code != 200):
+			print('IP check failed')
+			self.error(0)
+		else:
+			print('IP check completed\n')
+			r_json = json.loads(r.content.decode())
+			if (self.device['type'] not in r_json):
+				print('Device type check failed')
+				for shelly_name, shelly in shellys.items():
+					if shelly['type'] in r_json:
+						print('Wrong device type assigned: ' + self.type + ', device is of type: ' + shelly_name + '\n')
+						break
+				self.error(1)
+			else:
+				print('Device type check completed')
 
 	def go(self, command : str, value : int = None, channel : str = '0'):
 		if (command in self.device['commands']['go'] and channel in self.device['channel']):
@@ -74,6 +97,27 @@ class Shelly25_relay:
 		self.ip = ip
 		self.errors = errors
 		self.device = shelly25_relay
+		self.type = 'shelly25_relay'
+		self.check_device()
+		self.device['url'] = self.device['url'].format(ip = '{ip}', type = 'relay', channel = '{channel}', command = '{command}')
+
+	def check_device(self):
+		r = requests.get(self.device['url'].format(ip = self.ip, type = 'status', channel = '', command = '')[:-2])
+		if (r.status_code != 200):
+			print('IP check failed')
+			self.error(0)
+		else:
+			print('IP check completed\n')
+			r_json = json.loads(r.content.decode())
+			if (self.device['type'] not in r_json):
+				print('Device type check failed')
+				for shelly_name, shelly in shellys.items():
+					if shelly['type'] in r_json:
+						print('Wrong device type assigned: ' + self.type + ', device is of type: ' + shelly_name + '\n')
+						break
+				self.error(1)
+			else:
+				print('Device type check completed')
 
 	def turn(self, command : str, channel : str = '0', time : int = None):
 		if (command in self.device['commands']['turn'] and channel in self.device['channel']):
@@ -106,6 +150,28 @@ class Shelly_dimmer:
 		self.ip = ip
 		self.errors = errors
 		self.device = shelly_dimmer
+		self.type = 'shelly_dimmer'
+		self.check_device()
+		self.device['url'] = self.device['url'].format(ip = '{ip}', type = 'light', channel = '{channel}', command = '{command}')
+
+	def check_device(self):
+		r = requests.get(self.device['url'].format(ip = self.ip, type = 'status', channel = '', command = '')[:-2])
+		if (r.status_code != 200):
+			print('IP check failed')
+			self.error(0)
+		else:
+			print('IP check completed\n')
+			r_json = json.loads(r.content.decode())
+			if (self.device['type'] not in r_json):
+				print('Device type check failed')
+				for shelly_name, shelly in shellys.items():
+					if shelly['type'] in r_json:
+						print('Wrong device type assigned: ' + self.type + ', device is of type: ' + shelly_name + '\n')
+						break
+				self.error(1)
+			else:
+				print('Device type check completed')
+				
 
 	def turn(self, command : str, brightness : int = None, time : int = None, channel : str = '0'):
 		if (command in self.device['commands']['turn'] and channel in self.device['channel']):
@@ -162,6 +228,27 @@ class Shelly_plug:
 		self.ip = ip
 		self.errors = errors
 		self.device = shelly_plug
+		self.type = 'shelly_plug'
+		self.check_device()
+		self.device['url'] = self.device['url'].format(ip = '{ip}', type = 'relay', channel = '{channel}', command = '{command}')
+
+	def check_device(self):
+		r = requests.get(self.device['url'].format(ip = self.ip, type = 'status', channel = '', command = '')[:-2])
+		if (r.status_code != 200):
+			print('IP check failed')
+			self.error(0)
+		else:
+			print('IP check completed\n')
+			r_json = json.loads(r.content.decode())
+			if (self.device['type'] not in r_json):
+				print('Device type check failed')
+				for shelly_name, shelly in shellys.items():
+					if shelly['type'] in r_json:
+						print('Wrong device type assigned: ' + self.type + ', device is of type: ' + shelly_name + '\n')
+						break
+				self.error(1)
+			else:
+				print('Device type check completed')
 
 	def turn(self, command : str, time : int = None, channel : str = '0'):
 		if (time == None):
@@ -177,6 +264,10 @@ class Shelly_plug:
 				print('Failed with output: ' + str(ex))
 
 	def get_attr(self, attr : str, channel : str = '0'):
+		"""
+		:param attr: the specific Json attribute to be returned or all
+		:type attr: str
+		"""
 		if (channel in self.device['channel']):
 			if (attr in self.device['attributes']):
 				r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = ''))
@@ -194,6 +285,27 @@ class Shelly1:
 		self.ip = ip
 		self.errors = errors
 		self.device = shelly1
+		self.type = 'shelly1'
+		self.check_device()
+		self.device['url'] = self.device['url'].format(ip = '{ip}', type = 'relay', channel = '{channel}', command = '{command}')
+
+	def check_device(self):
+		r = requests.get(self.device['url'].format(ip = self.ip, type = 'status', channel = '', command = '')[:-2])
+		if (r.status_code != 200):
+			print('IP check failed')
+			self.error(0)
+		else:
+			print('IP check completed\n')
+			r_json = json.loads(r.content.decode())
+			if (self.device['type'] not in r_json):
+				print('Device type check failed')
+				for shelly_name, shelly in shellys.items():
+					if shelly['type'] in r_json:
+						print('Wrong device type assigned: ' + self.type + ', device is of type: ' + shelly_name + '\n')
+						break
+				self.error(1)
+			else:
+				print('Device type check completed')
 
 	def turn(self, command : str, time : int = None, channel : str = '0'):
 		if (time == None):
@@ -220,6 +332,17 @@ class Shelly1:
 	def error(self, code):
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
 
+def auto_assign(ip : str):
+	"""
+	:param ip: ip of Shelly
+	:type ip: str
+	"""
+	print(ip)
+
+
+
 if __name__ == '__main__':
-	s = Shelly_dimmer('192.168.100.123')
-	print(s.get_attr('all'))
+	s = Shelly_dimmer('192.168.100.124')
+	s.getattr()
+	p = Shelly_plug('Beamer')
+	p.getattr()
