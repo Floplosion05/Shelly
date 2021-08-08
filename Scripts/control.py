@@ -145,6 +145,8 @@ class Shelly_dimmer:
 			print('Failed with output: ' + str(ex))
 
 	def get_attr(self, attr : str, channel : str = '0'):
+		r = requests.get(self.device['url'].format(self.ip, '0', ''))
+		print(r.json())
 		if (channel in self.device['channel']):
 			if (attr in self.device['attributes']):
 				r = requests.get(self.device['url'].format(self.ip, channel, ''))
@@ -219,4 +221,4 @@ class Shelly1:
 
 if __name__ == '__main__':
 	s = Shelly_dimmer('192.168.100.123')
-	s.turn('on', 50, 5)
+	s.get_attr('ison')
