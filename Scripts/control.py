@@ -27,7 +27,7 @@ class shelly25_roller:
 	def check_device(self):
 		r = requests.get(self.device['url'].format(ip = self.ip, type = 'status', channel = '', command = '')[:-2])
 		if (r.status_code != 200):
-			print('IP check failed')
+			print('IP check failed with returncode: ' + str(r.status_code))
 			self.error(0)
 		else:
 			print('IP check completed\n')
@@ -104,7 +104,7 @@ class shelly25_relay:
 	def check_device(self):
 		r = requests.get(self.device['url'].format(ip = self.ip, type = 'status', channel = '', command = '')[:-2])
 		if (r.status_code != 200):
-			print('IP check failed')
+			print('IP check failed with returncode: ' + str(r.status_code))
 			self.error(0)
 		else:
 			print('IP check completed\n')
@@ -151,13 +151,16 @@ class shelly_dimmer:
 		self.errors = errors
 		self.device = Shelly_Dimmer_Dict
 		self.type = 'shelly_dimmer'
+		print(self.device['url'])
 		self.check_device()
 		self.device['url'] = self.device['url'].format(ip = '{ip}', type = 'light', channel = '{channel}', command = '{command}')
 
 	def check_device(self):
+		print(self.device['url'])
+		print(self.device['url'].format(ip = self.ip, type = '', channel = '', command = '')[:-2])
 		r = requests.get(self.device['url'].format(ip = self.ip, type = 'status', channel = '', command = '')[:-2])
 		if (r.status_code != 200):
-			print('IP check failed')
+			print('IP check failed with returncode: ' + str(r.status_code))
 			self.error(0)
 		else:
 			print('IP check completed\n')
@@ -213,10 +216,10 @@ class shelly_dimmer:
 	def get_attr(self, attr : str, channel : str = '0'):
 		if (channel in self.device['channel']):
 			if (attr in self.device['attributes']):
-				r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = ''))
+				r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = '')[:-1])
 				return r.json()[attr]
 			elif (attr == 'all'):
-				r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = ''))
+				r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = '')[:-1])
 				return r.json()
 
 	def error(self, code):
@@ -235,7 +238,7 @@ class shelly_plug:
 	def check_device(self):
 		r = requests.get(self.device['url'].format(ip = self.ip, type = 'status', channel = '', command = '')[:-2])
 		if (r.status_code != 200):
-			print('IP check failed')
+			print('IP check failed with returncode: ' + str(r.status_code))
 			self.error(0)
 		else:
 			print('IP check completed\n')
@@ -264,10 +267,6 @@ class shelly_plug:
 				print('Failed with output: ' + str(ex))
 
 	def get_attr(self, attr : str, channel : str = '0'):
-		"""
-		:param attr: the specific Json attribute to be returned or all
-		:type attr: str
-		"""
 		if (channel in self.device['channel']):
 			if (attr in self.device['attributes']):
 				r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = ''))
@@ -292,7 +291,7 @@ class shelly1:
 	def check_device(self):
 		r = requests.get(self.device['url'].format(ip = self.ip, type = 'status', channel = '', command = '')[:-2])
 		if (r.status_code != 200):
-			print('IP check failed')
+			print('IP check failed with returncode: ' + str(r.status_code))
 			self.error(0)
 		else:
 			print('IP check completed\n')
@@ -332,6 +331,14 @@ class shelly1:
 	def error(self, code):
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
 
+Shelly_Classes = {
+					'shelly25_roller' : shelly25_roller,
+					'shelly25_relay' : shelly25_relay,
+					'shelly_dimmer' : shelly_dimmer,
+					'shelly_plug' : shelly_plug,
+					'shelly1' : shelly1
+}
+
 def auto_assign(ip : str):
 	r"""Auto assigns an IP to a shelly Object
 	
@@ -349,18 +356,13 @@ def auto_assign(ip : str):
 		r_json = json.loads(r.content.decode())
 		for shelly_name, shelly in Shellys.items():
 			if shelly['type'] in r_json:
-				#print('Shelly is of type: ' + shelly_name + '\n')
-				print(globals()[shelly_name])
-				return shelly_name
-				#return globals()[shelly_name]
+				print('Shelly is of type: ' + shelly_name + '\n')
+				return Shelly_Classes[shelly_name](ip)
 
-a = globals()[auto_assign('FloziDimmer')]
-print(type(a))
-a.turn(a, 'on')
+a = auto_assign('FloziDimmer')
+print(a.get_attr('all'))
 
-"""
 if __name__ == '__main__':
 	s = shelly_dimmer('192.168.100.123')
 	print(type(s))
-	s.get_attr('all')
-"""
+	print(s.get_attr('all'))
