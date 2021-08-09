@@ -7,19 +7,19 @@ end_str = '\n\nIf you are having trouble, please visit https://github.com/Floplo
 errors = ['Ip could not be reached', 'Device Type does not match']
 
 url = 'http://{ip}/{type}/{channel}?{command}'
-shelly25_relay = {'url' : url, 'type' : 'relays', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'overtemperature', 'is_valid', 'source']}
-shelly25_roller = {'url' : url, 'type' : 'rollers', 'commands' : {'go' : ['open', 'stop', 'close'], 'pos' : ['to_pos']}, 'channel' : ['0', '1'], 'attributes' : ['state', 'power', 'is_valid', 'safety_switch', 'overtemperature', 'stop_reason', 'last_direction', 'current_pos', 'calibrating', 'positioning']}
-shelly_dimmer = {'url' : url, 'type' : 'lights', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'bright' : ['brightness'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'mode', 'brightness']}
-shelly_plug = {'url' : url, 'type' : 'relays', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'overpower', 'source']}
-shelly1 = {'url' : url, 'type' : 'relays', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'overpower', 'source']}
-shellys = {'shelly25_relay' : shelly25_relay, 'shelly25_roller' : shelly25_roller, 'shelly_dimmer' : shelly_dimmer, 'shelly_plug' : shelly_plug, 'shelly1' : shelly1}
+Shelly25_Relay_Dict = {'url' : url, 'type' : 'relays', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'overtemperature', 'is_valid', 'source']}
+Shelly25_Roller_Dict = {'url' : url, 'type' : 'rollers', 'commands' : {'go' : ['open', 'stop', 'close'], 'pos' : ['to_pos']}, 'channel' : ['0', '1'], 'attributes' : ['state', 'power', 'is_valid', 'safety_switch', 'overtemperature', 'stop_reason', 'last_direction', 'current_pos', 'calibrating', 'positioning']}
+Shelly_Dimmer_Dict = {'url' : url, 'type' : 'lights', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'bright' : ['brightness'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'mode', 'brightness']}
+Shelly_Plug_Dict = {'url' : url, 'type' : 'relays', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'overpower', 'source']}
+Shelly1_Dict = {'url' : url, 'type' : 'relays', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'overpower', 'source']}
+Shellys = {'shelly25_relay' : Shelly25_Relay_Dict, 'shelly25_roller' : Shelly25_Roller_Dict, 'shelly_dimmer' : Shelly_Dimmer_Dict, 'shelly_plug' : Shelly_Plug_Dict, 'shelly1' : Shelly1_Dict}
 
-class Shelly25_roller:
+class shelly25_roller:
 
 	def __init__(self, ip : str):
 		self.ip = ip
 		self.errors = errors
-		self.device = shelly25_roller
+		self.device = Shelly25_Roller_Dict
 		self.type = 'shelly25_roller'
 		self.check_device()
 		self.device['url'] = self.device['url'].format(ip = '{ip}', type = 'roller', channel = '{channel}', command = '{command}')
@@ -34,7 +34,7 @@ class Shelly25_roller:
 			r_json = json.loads(r.content.decode())
 			if (self.device['type'] not in r_json):
 				print('Device type check failed')
-				for shelly_name, shelly in shellys.items():
+				for shelly_name, shelly in Shellys.items():
 					if shelly['type'] in r_json:
 						print('Wrong device type assigned: ' + self.type + ', device is of type: ' + shelly_name + '\n')
 						break
@@ -75,7 +75,7 @@ class Shelly25_roller:
 			print('Didnt recognise command: ' + command + ' on channel ' + channel)
 
 	def calibrate(self, channel : str = '0'):
-		if (channel in shelly25_relay['channel']):
+		if (channel in self.device['channel']):
 			r = requests.get(self.device['url'].format(ip = self.ip, channel = channel + '/calibrate', command = ''))
 			print(r.content.decode())
 
@@ -91,12 +91,12 @@ class Shelly25_roller:
 	def error(self, code):
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
 
-class Shelly25_relay:
+class shelly25_relay:
 
 	def __init__(self, ip : str):
 		self.ip = ip
 		self.errors = errors
-		self.device = shelly25_relay
+		self.device = Shelly25_Relay_Dict
 		self.type = 'shelly25_relay'
 		self.check_device()
 		self.device['url'] = self.device['url'].format(ip = '{ip}', type = 'relay', channel = '{channel}', command = '{command}')
@@ -111,7 +111,7 @@ class Shelly25_relay:
 			r_json = json.loads(r.content.decode())
 			if (self.device['type'] not in r_json):
 				print('Device type check failed')
-				for shelly_name, shelly in shellys.items():
+				for shelly_name, shelly in Shellys.items():
 					if shelly['type'] in r_json:
 						print('Wrong device type assigned: ' + self.type + ', device is of type: ' + shelly_name + '\n')
 						break
@@ -144,12 +144,12 @@ class Shelly25_relay:
 	def error(self, code):
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
 
-class Shelly_dimmer:
+class shelly_dimmer:
 	
 	def __init__(self, ip : str):
 		self.ip = ip
 		self.errors = errors
-		self.device = shelly_dimmer
+		self.device = Shelly_Dimmer_Dict
 		self.type = 'shelly_dimmer'
 		self.check_device()
 		self.device['url'] = self.device['url'].format(ip = '{ip}', type = 'light', channel = '{channel}', command = '{command}')
@@ -164,7 +164,7 @@ class Shelly_dimmer:
 			r_json = json.loads(r.content.decode())
 			if (self.device['type'] not in r_json):
 				print('Device type check failed')
-				for shelly_name, shelly in shellys.items():
+				for shelly_name, shelly in Shellys.items():
 					if shelly['type'] in r_json:
 						print('Wrong device type assigned: ' + self.type + ', device is of type: ' + shelly_name + '\n')
 						break
@@ -222,12 +222,12 @@ class Shelly_dimmer:
 	def error(self, code):
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
 
-class Shelly_plug:
+class shelly_plug:
 
 	def __init__(self, ip : str):
 		self.ip = ip
 		self.errors = errors
-		self.device = shelly_plug
+		self.device = Shelly_Plug_Dict
 		self.type = 'shelly_plug'
 		self.check_device()
 		self.device['url'] = self.device['url'].format(ip = '{ip}', type = 'relay', channel = '{channel}', command = '{command}')
@@ -242,7 +242,7 @@ class Shelly_plug:
 			r_json = json.loads(r.content.decode())
 			if (self.device['type'] not in r_json):
 				print('Device type check failed')
-				for shelly_name, shelly in shellys.items():
+				for shelly_name, shelly in Shellys.items():
 					if shelly['type'] in r_json:
 						print('Wrong device type assigned: ' + self.type + ', device is of type: ' + shelly_name + '\n')
 						break
@@ -279,12 +279,12 @@ class Shelly_plug:
 	def error(self, code):
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
 
-class Shelly1:
+class shelly1:
 
 	def __init__(self, ip):
 		self.ip = ip
 		self.errors = errors
-		self.device = shelly1
+		self.device = Shelly1_Dict
 		self.type = 'shelly1'
 		self.check_device()
 		self.device['url'] = self.device['url'].format(ip = '{ip}', type = 'relay', channel = '{channel}', command = '{command}')
@@ -299,7 +299,7 @@ class Shelly1:
 			r_json = json.loads(r.content.decode())
 			if (self.device['type'] not in r_json):
 				print('Device type check failed')
-				for shelly_name, shelly in shellys.items():
+				for shelly_name, shelly in Shellys.items():
 					if shelly['type'] in r_json:
 						print('Wrong device type assigned: ' + self.type + ', device is of type: ' + shelly_name + '\n')
 						break
@@ -333,16 +333,34 @@ class Shelly1:
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
 
 def auto_assign(ip : str):
+	r"""Auto assigns an IP to a shelly Object
+	
+	auto_assign(ip : str)
+
+	:param ip: A String containing the IP of the Shelly
+
+	:param shelly: A variable to hold the rteurned class
 	"""
-	:param ip: ip of Shelly
-	:type ip: str
-	"""
-	print(ip)
+	r = requests.get('http://{0}/status'.format(ip))
+	if (r.status_code != 200):
+		print('IP check failed')
+	else:
+		#print('IP check completed\n')
+		r_json = json.loads(r.content.decode())
+		for shelly_name, shelly in Shellys.items():
+			if shelly['type'] in r_json:
+				#print('Shelly is of type: ' + shelly_name + '\n')
+				print(globals()[shelly_name])
+				return shelly_name
+				#return globals()[shelly_name]
 
+a = globals()[auto_assign('FloziDimmer')]
+print(type(a))
+a.turn(a, 'on')
 
-
+"""
 if __name__ == '__main__':
-	s = Shelly_dimmer('192.168.100.124')
-	s.getattr()
-	p = Shelly_plug('Beamer')
-	p.getattr()
+	s = shelly_dimmer('192.168.100.123')
+	print(type(s))
+	s.get_attr('all')
+"""
