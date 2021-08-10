@@ -40,3 +40,4 @@ Thumbs.db
 setup.*
 
 ###Credit to @octocat###
+Scripts/__pycache__/check_device.cpython-37.pyc
