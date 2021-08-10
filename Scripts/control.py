@@ -19,7 +19,7 @@ Shellys = {
 		'url' : url,
 		'type' : 'relays',
 		'commands' : {
-			'turn' :[
+			'turn' : [
 				'on',
 				'off',
 				'toggle'
@@ -41,7 +41,41 @@ Shellys = {
 			'is_valid', 'source'
 		]
 	},
+	'shelly25_roller' : {
+		'url' : url,
+		'type' : 'rollers',
+		'commands' : {
+			'go' : [
+				'open',
+				'stop',
+				'close'
+			],
+			'pos' : [
+				'to_pos'
+			]
+		},
+		'channel' : [
+			'0',
+			'1'
+		],
+		'attributes' : [
+			'state',
+			'power',
+			'is_valid',
+			'safety_switch',
+			'overtemperature',
+			'stop_reason',
+			'last_direction',
+			'current_pos',
+			'calibrating',
+			'positioning'
+		]
+	},
+	'shelly_dimmer' : {
+		'url' : url,
+		'type' : 'lights',
 
+	}
 }
 
 class shelly25_roller:
