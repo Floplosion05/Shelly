@@ -12,7 +12,7 @@ Shelly25_Roller_Dict = {'url' : url, 'type' : 'rollers', 'commands' : {'go' : ['
 Shelly_Dimmer_Dict = {'url' : url, 'type' : 'lights', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'bright' : ['brightness'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'mode', 'brightness']}
 Shelly_Plug_Dict = {'url' : url, 'type' : 'relays', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'overpower', 'source']}
 Shelly1_Dict = {'url' : url, 'type' : 'relays', 'commands' : {'turn' : ['on', 'off', 'toggle'], 'time' : ['timer']}, 'channel' : ['0'], 'attributes' : ['ison', 'has_timer', 'timer_started', 'timer_duration', 'timer_remaining', 'overpower', 'source']}
-Shellys = {'shelly25_relay' : Shelly25_Relay_Dict, 'shelly25_roller' : Shelly25_Roller_Dict, 'shelly_dimmer' : Shelly_Dimmer_Dict, 'shelly_plug' : Shelly_Plug_Dict, 'shelly1' : Shelly1_Dict}
+#Shellys = {'shelly25_relay' : Shelly25_Relay_Dict, 'shelly25_roller' : Shelly25_Roller_Dict, 'shelly_dimmer' : Shelly_Dimmer_Dict, 'shelly_plug' : Shelly_Plug_Dict, 'shelly1' : Shelly1_Dict}
 
 Shellys = {
 	'shelly25_relay' : {
@@ -74,7 +74,83 @@ Shellys = {
 	'shelly_dimmer' : {
 		'url' : url,
 		'type' : 'lights',
-
+		'commands' : {
+			'turn' : [
+				'on',
+				'off',
+				'toggle'
+			],
+			'bright' : [
+				'brightness'
+			],
+			'time' : [
+				'timer'
+			]
+		},
+		'channel' : [
+			'0'
+		],
+		'attributes' : [
+			'ison',
+			'has_timer',
+			'timer_started',
+			'timer_duration',
+			'timer_remaining',
+			'mode',
+			'brightness'
+		]
+	},
+	'shelly_plug' : {
+		'url' : url,
+		'type' : 'relays',
+		'commands' : {
+			'turn' : [
+				'on',
+				'off',
+				'toggle'
+			],
+			'time' : [
+				'timer'
+			]
+		},
+		'channel' : [
+			'0'
+		],
+		'attributes' : [
+			'ison',
+			'has_timer',
+			'timer_started',
+			'timer_duration',
+			'timer_remaining',
+			'overpower',
+			'source'
+		]
+	},
+	'shelly1' : {
+		'url' : url,
+		'type' : 'relays',
+		'commands' : {
+			'turn' : [
+				'on',
+				'off',
+				'toggle'
+			],
+			'time' : [
+				'timer'
+			]
+		},
+		'channel' : [
+			'0'
+		],
+		'attributes' : [
+			'ison',
+			'has_timer',
+			'timer_started',
+			'timer_duration',
+			'timer_remaining',
+			'overpower',
+			'source'
+		]
 	}
 }
 
@@ -213,7 +289,7 @@ class shelly_dimmer:
 	def __init__(self, ip : str):
 		self.ip = ip
 		self.errors = errors
-		self.device = Shelly_Dimmer_Dict
+		self.device = Shellys['shelly_dimmer']
 		self.type = 'shelly_dimmer'
 		self.check_device()
 
@@ -420,9 +496,46 @@ def auto_assign(ip : str):
 				print('Shelly is of type: ' + shelly_name + '\n')
 				return Shelly_Classes[shelly_name](ip)
 
+def device_discovery(ip_start : str, ip_end : str):
+	ip_start_list = list(map(int,ip_start.split('.')))#[::-1]
+	ip_end_list = list(map(int, ip_end.split('.')))#[::-1]
+	
+	"""
+	for sub_seq in ip_start_list:
+		print(str(sub_seq) + ' : ' + str(ip_end_list[ip_start_list.index(sub_seq)]))
+		if sub_seq < ip_end_list[ip_start_list.index(sub_seq)]:
+			for x in range(sub_seq, ip_end_list[ip_start_list.index(sub_seq)] + 1):
+				temp_ip = ip_start_list[::-1][:-1] + [x]
+				print(temp_ip)
+		elif sub_seq > ip_end_list[ip_start_list.index(sub_seq)]:
+			for x in range(ip_end_list[ip_start_list.index(sub_seq)], sub_seq + 1):
+				print(x)
+	"""
+	for a in range(ip_start_list[0], ip_end_list[0] + 1):
+		for b in range(ip_start_list[1], ip_end_list[1] + 1):
+			for c in range(ip_start_list[2], ip_end_list[2] + 1):
+				for d in range(ip_start_list[3], ip_end_list[3] + 1):
+					temp_ip = 'http://' + str(a) + '.' + str(b) + '.' + str(c) + '.' + str(d) + '/status'
+					print(temp_ip)
+					try:
+						r = requests.get(temp_ip, timeout )
+						requests.get()
+						if (r.status_code != 200):
+							print('IP check failed with returncode: ' + str(r.status_code))
+						else:
+							print(r.content.decode())
+							for shelly_name, shelly in Shellys.items():
+								if shelly['type'] in r.json():
+									print('Device is of type: ' + shelly_name + '\n')
+									break
+					except requests.exceptions.RequestException as e:
+						continue
+
+
 if __name__ == '__main__':
-	a = auto_assign('FloziDimmer')
-	print(a.get_attr('brightness'))
-	a.brightness(67)
+	device_discovery('192.168.100.0', '192.168.101.255')
+	#a = auto_assign('FloziDimmer')
+	#print(a.get_attr('brightness'))
+	#a.brightness(67)
 	#s = shelly_dimmer('192.168.100.123')
 	#print(s.get_attr('all'))
