@@ -11,9 +11,9 @@ Shellys = {
 		'relays' : {
 			'Shelly Switch' : [
 				'Shelly1',
-				'Shelly25-Relay'
+				'Shelly25_Relay'
 			],
-			'Shelly Plug' : [] #Shelly Plug
+			'Shelly_Plug' : [] #Shelly Plug
 		},
 		'rollers' : [
 			'Shelly25_Roller'
@@ -48,4 +48,4 @@ def check_device_type(ip : str, timeout : int = 5, verbose : bool = False) -> st
 					return Shellys['type'][type][soup.find('head').title.get_text()][len(r1.json()['relays']) - 1]
 
 if __name__ == '__main__':
-	print(check_device_type('FloZiRoll'))
+	print(check_device_type('HoZiSchalter'))
