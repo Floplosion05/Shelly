@@ -318,7 +318,7 @@ class Shelly1:
 	def error(self, code):
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
 
-def auto_assign(ip : str):
+def auto_assign(ip : str):######################################################################################
 	r"""Auto assigns an IP to a shelly Object
 	
 	auto_assign(ip : str)
@@ -500,7 +500,7 @@ Shellys = {
 	}
 }
 
-def check_device_type(ip : str, timeout : int = 5, verbose : bool = False, instantiate : bool = False):
+def check_device_type(ip : str, timeout : int = 5, verbose : bool = False, instantiate : bool = False):######################################################################################
 	r"""
 	TBD
 	"""
@@ -617,6 +617,8 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 1, verbose : 
 	if instantiate:
 		return shellys_instances
 	
+#Shelly i3 support
+#Shelly RGB support
 
 if __name__ == '__main__':
 
