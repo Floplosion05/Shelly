@@ -534,6 +534,7 @@ def check_device_type(ip : str, timeout : int = 5, verbose : bool = False, insta
 				soup = BeautifulSoup(r2.content, 'html.parser')
 				if soup.find('head').title.get_text() in Shellys['type'][type] and soup.find('head').title.get_text() != 'Shelly Switch': #Shelly Plug
 					if instantiate:
+						print(Shellys['classes'][Shellys['type'][type][soup.find('head').title.get_text()][0]])
 						return Shellys['classes'][Shellys['type'][type][soup.find('head').title.get_text()][0]](ip)
 					else:
 						return Shellys['type'][type][soup.find('head').title.get_text()][0]
@@ -592,15 +593,21 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 1, verbose : 
 				for d in range(ip_start_list[3], ip_end_list[3] + 1):
 					temp_ip = str(a) + '.' + str(b) + '.' + str(c) + '.' + str(d)
 					temp_device_type = check_device_type(temp_ip, timeout, verbose, instantiate)
-					if verbose and not instantiate:
-						print(temp_ip + ' : ' + str(temp_device_type))
-					else:
-						print(temp_ip + ' : ' + str(temp_device_type.__name__))
-					try:
-						shellys[temp_device_type].append(temp_ip)
+
+					if temp_device_type:
 						if instantiate:
-							shellys_instances[temp_device_type.__name__].append(temp_device_type)
-					except KeyError as e:
+							shellys[temp_device_type.__class__.__name__].append(temp_ip)
+							shellys_instances[temp_device_type.__class__.__name__].append(temp_device_type)
+							if verbose:
+								print(temp_ip + ' : ' + str(temp_device_type.__class__.__name__))
+						else:
+							try:
+								shellys[temp_device_type].append(temp_ip)
+							except KeyError as e:
+								continue
+							if verbose:
+								print(temp_ip + ' : ' + str(temp_device_type))
+					else:
 						continue
 					
 	if beautify:
@@ -614,7 +621,12 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 1, verbose : 
 if __name__ == '__main__':
 
 	#for arg in sys.argv:
-	device_discovery('192.168.100.43', '192.168.100.45', 5, True, True)
+	shelly_instances = device_discovery('192.168.100.43', '192.168.100.44', 5, True, True, True)
+	for shelly_type, shelly_instance_list in shelly_instances.items():
+		print(shelly_type)
+		for shelly_instance in shelly_instance_list:
+			print(shelly_instance)
+			print(shelly_instance.get_attr('all'))
 	#a = auto_assign('FloziDimmer')
 	#print(a.get_attr('brightness'))
 	#a.brightness(67)
