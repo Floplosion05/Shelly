@@ -44,7 +44,7 @@ def check_device_type(ip : str, timeout : int = 5, verbose : bool = False) -> st
 			elif type in r1.json():
 				soup = BeautifulSoup(r2.content, 'html.parser')
 				if soup.find('head').title.get_text() in Shellys['type'][type] and soup.find('head').title.get_text() != 'Shelly Switch':
-					return Shellys['type'][type][soup.find('head').title.get_text()]
+					return Shellys['type'][type][soup.find('head').title.get_text()][0]
 				elif soup.find('head').title.get_text() in Shellys['type'][type]:
 					return Shellys['type'][type][soup.find('head').title.get_text()][len(r1.json()['relays']) - 1]
 
