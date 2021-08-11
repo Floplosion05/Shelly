@@ -3,153 +3,11 @@ from requests.auth import HTTPBasicAuth
 import json
 from bs4 import BeautifulSoup
 import sys
-from check_device import check_device_type
 
 end_str = '\n\nIf you are having trouble, please visit https://github.com/Floplosion05/Shelly'
 errors = ['Ip could not be reached', 'Device Type does not match']
 
 url = 'http://{ip}/{type}/{channel}?{command}'
-   
-Shellys = {
-	'Shelly25_Relay' : {
-        'url' : url,
-        'type' : 'relays',
-        'commands' : {
-            'turn' : [
-                'on',
-                'off',
-                'toggle'
-            ],
-            'time' : [
-                'timer'
-            ]
-        },
-        'channel' : [
-            '0'
-        ],
-        'attributes' : [
-            'ison',
-            'has_timer',
-            'timer_started',
-            'timer_duration',
-            'timer_remaining',
-            'overtemperature',
-            'is_valid',
-            'source'
-        ]
-    },
-	'Shelly25_Roller' : {
-		'url' : url,
-		'type' : 'rollers',
-		'commands' : {
-			'go' : [
-				'open',
-				'stop',
-				'close'
-			],
-			'pos' : [
-				'to_pos'
-			]
-		},
-		'channel' : [
-			'0',
-			'1'
-		],
-		'attributes' : [
-			'state',
-			'power',
-			'is_valid',
-			'safety_switch',
-			'overtemperature',
-			'stop_reason',
-			'last_direction',
-			'current_pos',
-			'calibrating',
-			'positioning'
-		]
-	},
-	'Shelly_Dimmer' : {
-		'url' : url,
-		'type' : 'lights',
-		'commands' : {
-			'turn' : [
-				'on',
-				'off',
-				'toggle'
-			],
-			'bright' : [
-				'brightness'
-			],
-			'time' : [
-				'timer'
-			]
-		},
-		'channel' : [
-			'0'
-		],
-		'attributes' : [
-			'ison',
-			'has_timer',
-			'timer_started',
-			'timer_duration',
-			'timer_remaining',
-			'mode',
-			'brightness'
-		]
-	},
-	'Shelly_Plug' : {
-		'url' : url,
-		'type' : 'relays',
-		'commands' : {
-			'turn' : [
-				'on',
-				'off',
-				'toggle'
-			],
-			'time' : [
-				'timer'
-			]
-		},
-		'channel' : [
-			'0'
-		],
-		'attributes' : [
-			'ison',
-			'has_timer',
-			'timer_started',
-			'timer_duration',
-			'timer_remaining',
-			'overpower',
-			'source'
-		]
-	},
-	'Shelly1' : {
-		'url' : url,
-		'type' : 'relays',
-		'commands' : {
-			'turn' : [
-				'on',
-				'off',
-				'toggle'
-			],
-			'time' : [
-				'timer'
-			]
-		},
-		'channel' : [
-			'0'
-		],
-		'attributes' : [
-			'ison',
-			'has_timer',
-			'timer_started',
-			'timer_duration',
-			'timer_remaining',
-			'overpower',
-			'source'
-		]
-	}
-}
 
 class Shelly25_Roller:
 
@@ -460,14 +318,6 @@ class Shelly1:
 	def error(self, code):
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
 
-Shelly_Classes = {
-					'Shelly25_Roller' : Shelly25_Roller,
-					'Shelly25_Relay' : Shelly25_Relay,
-					'Shelly_Dimmer' : Shelly_Dimmer,
-					'Shelly_Plug' : Shelly_Plug,
-					'Shelly1' : Shelly1
-}
-
 def auto_assign(ip : str):
 	r"""Auto assigns an IP to a shelly Object
 	
@@ -483,12 +333,248 @@ def auto_assign(ip : str):
 		for shelly_name, shelly in Shellys.items():
 			if shelly['type'] in r.json():
 				print('Shelly is of type: ' + shelly_name + '\n')
-				return Shelly_Classes[shelly_name](ip)
+				return Shellys['classes'][shelly_name](ip)
 
-def device_discovery(ip_start : str, ip_end : str, timeout : int = 1, verbose = False, beautify : bool = False):
+Shellys = {
+	'Shelly25_Relay' : {
+        'url' : url,
+        'type' : 'relays',
+        'commands' : {
+            'turn' : [
+                'on',
+                'off',
+                'toggle'
+            ],
+            'time' : [
+                'timer'
+            ]
+        },
+        'channel' : [
+            '0'
+        ],
+        'attributes' : [
+            'ison',
+            'has_timer',
+            'timer_started',
+            'timer_duration',
+            'timer_remaining',
+            'overtemperature',
+            'is_valid',
+            'source'
+        ]
+    },
+	'Shelly25_Roller' : {
+		'url' : url,
+		'type' : 'rollers',
+		'commands' : {
+			'go' : [
+				'open',
+				'stop',
+				'close'
+			],
+			'pos' : [
+				'to_pos'
+			]
+		},
+		'channel' : [
+			'0',
+			'1'
+		],
+		'attributes' : [
+			'state',
+			'power',
+			'is_valid',
+			'safety_switch',
+			'overtemperature',
+			'stop_reason',
+			'last_direction',
+			'current_pos',
+			'calibrating',
+			'positioning'
+		]
+	},
+	'Shelly_Dimmer' : {
+		'url' : url,
+		'type' : 'lights',
+		'commands' : {
+			'turn' : [
+				'on',
+				'off',
+				'toggle'
+			],
+			'bright' : [
+				'brightness'
+			],
+			'time' : [
+				'timer'
+			]
+		},
+		'channel' : [
+			'0'
+		],
+		'attributes' : [
+			'ison',
+			'has_timer',
+			'timer_started',
+			'timer_duration',
+			'timer_remaining',
+			'mode',
+			'brightness'
+		]
+	},
+	'Shelly_Plug' : {
+		'url' : url,
+		'type' : 'relays',
+		'commands' : {
+			'turn' : [
+				'on',
+				'off',
+				'toggle'
+			],
+			'time' : [
+				'timer'
+			]
+		},
+		'channel' : [
+			'0'
+		],
+		'attributes' : [
+			'ison',
+			'has_timer',
+			'timer_started',
+			'timer_duration',
+			'timer_remaining',
+			'overpower',
+			'source'
+		]
+	},
+	'Shelly1' : {
+		'url' : url,
+		'type' : 'relays',
+		'commands' : {
+			'turn' : [
+				'on',
+				'off',
+				'toggle'
+			],
+			'time' : [
+				'timer'
+			]
+		},
+		'channel' : [
+			'0'
+		],
+		'attributes' : [
+			'ison',
+			'has_timer',
+			'timer_started',
+			'timer_duration',
+			'timer_remaining',
+			'overpower',
+			'source'
+		]
+	},
+	'type' : {
+		'lights' : [
+			'Shelly_Dimmer'
+		],
+		'relays' : {
+			'Shelly Switch' : [
+				'Shelly1',
+				'Shelly25_Relay'
+			],
+			'Shelly Plug' : [
+				'Shelly_Plug'
+			]
+		},
+		'rollers' : [
+			'Shelly25_Roller'
+		]
+	},
+	'classes' : {
+		'Shelly25_Roller' : Shelly25_Roller,
+		'Shelly25_Relay' : Shelly25_Relay,
+		'Shelly_Dimmer' : Shelly_Dimmer,
+		'Shelly_Plug' : Shelly_Plug,
+		'Shelly1' : Shelly1
+	}
+}
+
+def check_device_type(ip : str, timeout : int = 5, verbose : bool = False, instantiate : bool = False):
+	r"""
+	TBD
+	"""
+	ip = ip.replace('http://','').replace('/status', '').replace('/','')
+	try: #Try to establish a connection
+		r1 = requests.get('http://' + ip + '/status', timeout = timeout)
+		r2 = requests.get('http://' + ip, timeout = timeout)
+		try:
+			r1.json()
+		except:
+			if verbose:
+				print('Failed to convert Html content to JSON')
+			return False
+	except requests.exceptions.RequestException as e: #Catch exceptions like Timeout
+		if verbose:
+			print('Failed with error: ' + str(e))
+		return False
+
+	if r1.status_code != 200: #Catch unsuccesful connection
+		if verbose:
+			print('IP not found, errorcode: ' + str(r1.status_code))
+		return False
+	else:
+		for type in Shellys['type']: #Loop through all Shelly types
+			if type in r1.json() and type != 'relays': #When the keyword is found in the json response and its not relays: lights or rollers
+				if instantiate:
+					return Shellys['classes'][Shellys['type'][type][0]](ip)
+				else:
+					return Shellys['type'][type][0]
+			elif type in r1.json(): #When the keyowrd is found but it is relays: we have to 
+				soup = BeautifulSoup(r2.content, 'html.parser')
+				if soup.find('head').title.get_text() in Shellys['type'][type] and soup.find('head').title.get_text() != 'Shelly Switch': #Shelly Plug
+					if instantiate:
+						return Shellys['classes'][Shellys['type'][type][soup.find('head').title.get_text()][0]](ip)
+					else:
+						return Shellys['type'][type][soup.find('head').title.get_text()][0]
+				elif soup.find('head').title.get_text() in Shellys['type'][type]: #Shelly Switch
+					if instantiate:
+						return Shellys['classes'][Shellys['type'][type][soup.find('head').title.get_text()][len(r1.json()['relays']) - 1]](ip)#Shelly1 or Shelly25_Roller
+					else:
+						return Shellys['type'][type][soup.find('head').title.get_text()][len(r1.json()['relays']) - 1] #Shelly1 or Shelly25_Roller
+
+
+def device_discovery(ip_start : str, ip_end : str, timeout : int = 1, verbose : bool = False, beautify : bool = False, instantiate : bool = False):
+	r"""Discovers devices in a given ip range, returning a Dict of IP's 
+	
+	device_discovery(ip_start : str, ip_end : str, timeout : int, verbose : bool, beautify : bool)
+
+	:param ip_start: A String containing the starting IP
+
+	:param ip_end: A String containing the ending IP, must be higher!
+
+	:param timeout: An integer defining the maximum time before a http request times out
+
+	:param verbose: A boolean to give verbose output
+
+	:param beautify: A boolean to beautify the output of this function in the shell
+
+	"""
 	ip_start_list = list(map(int,ip_start.split('.')))#[::-1]
 	ip_end_list = list(map(int, ip_end.split('.')))#[::-1]
 	shellys = {
+		'Shelly25_Relay' : [
+		],
+		'Shelly25_Roller' : [
+		],
+		'Shelly_Dimmer' : [
+		],
+		'Shelly_Plug' : [
+		],
+		'Shelly1' : [
+		]
+	}
+	shellys_instances = {
 		'Shelly25_Relay' : [
 		],
 		'Shelly25_Roller' : [
@@ -505,11 +591,15 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 1, verbose = 
 			for c in range(ip_start_list[2], ip_end_list[2] + 1):
 				for d in range(ip_start_list[3], ip_end_list[3] + 1):
 					temp_ip = str(a) + '.' + str(b) + '.' + str(c) + '.' + str(d)
-					temp_device_type = check_device_type(temp_ip, timeout, verbose)
-					if verbose:
+					temp_device_type = check_device_type(temp_ip, timeout, verbose, instantiate)
+					if verbose and not instantiate:
 						print(temp_ip + ' : ' + str(temp_device_type))
+					else:
+						print(temp_ip + ' : ' + str(temp_device_type.__name__))
 					try:
 						shellys[temp_device_type].append(temp_ip)
+						if instantiate:
+							shellys_instances[temp_device_type.__name__].append(temp_device_type)
 					except KeyError as e:
 						continue
 					
@@ -517,12 +607,14 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 1, verbose = 
 		print(json.dumps(shellys, sort_keys = True, indent=4))
 	else:
 		print(shellys)
+	if instantiate:
+		return shellys_instances
+	
 
 if __name__ == '__main__':
 
 	#for arg in sys.argv:
-
-	device_discovery('192.168.100.0', '192.168.100.255',1,True,True)
+	device_discovery('192.168.100.43', '192.168.100.45', 5, True, True)
 	#a = auto_assign('FloziDimmer')
 	#print(a.get_attr('brightness'))
 	#a.brightness(67)
