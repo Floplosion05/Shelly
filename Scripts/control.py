@@ -507,7 +507,7 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 1, verbose = 
 					temp_ip = str(a) + '.' + str(b) + '.' + str(c) + '.' + str(d)
 					temp_device_type = check_device_type(temp_ip, timeout, verbose)
 					if verbose:
-						print(temp_ip + str(temp_device_type))
+						print(temp_ip + ' : ' + str(temp_device_type))
 					try:
 						shellys[temp_device_type].append(temp_ip)
 					except KeyError as e:

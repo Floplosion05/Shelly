@@ -13,7 +13,9 @@ Shellys = {
 				'Shelly1',
 				'Shelly25_Relay'
 			],
-			'Shelly_Plug' : [] #Shelly Plug
+			'Shelly Plug' : [
+				'Shelly_Plug'
+			]
 		},
 		'rollers' : [
 			'Shelly25_Roller'
@@ -22,7 +24,6 @@ Shellys = {
 }
 
 def check_device_type(ip : str, timeout : int = 5, verbose : bool = False) -> str:
-
 	ip = ip.replace('http://','').replace('/status', '').replace('/','')
 	try:
 		r1 = requests.get('http://' + ip + '/status', timeout = timeout)
@@ -43,9 +44,9 @@ def check_device_type(ip : str, timeout : int = 5, verbose : bool = False) -> st
 			elif type in r1.json():
 				soup = BeautifulSoup(r2.content, 'html.parser')
 				if soup.find('head').title.get_text() in Shellys['type'][type] and soup.find('head').title.get_text() != 'Shelly Switch':
-					return list(Shellys['type'][type])[list(Shellys['type'][type]).index(soup.find('head').title.get_text())]
+					return Shellys['type'][type][soup.find('head').title.get_text()]
 				elif soup.find('head').title.get_text() in Shellys['type'][type]:
 					return Shellys['type'][type][soup.find('head').title.get_text()][len(r1.json()['relays']) - 1]
 
 if __name__ == '__main__':
-	print(check_device_type('HoZiSchalter'))
+	print(check_device_type('192.168.100.44', verbose = True))
