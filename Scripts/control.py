@@ -483,7 +483,6 @@ if __name__ == '__main__':
 	for shelly_type, shelly_instance_list in shelly_instances.items():
 		print(shelly_type)
 		for shelly_instance in shelly_instance_list:
-			print(shelly_instance)
 			print(shelly_instance.get_attr('all'))
 	#a = check_device_type('FloziDimmer', 3, True, True)
 	#print(a.get_attr('brightness'))
