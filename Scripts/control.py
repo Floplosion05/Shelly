@@ -9,17 +9,13 @@ errors = ['Ip could not be reached', 'Device Type does not match']
 
 url = 'http://{ip}/{type}/{channel}?{command}'
 
-class Shelly25_Roller:
+class Shelly:
 
-	def __init__(self, ip : str):
-		self.ip = ip
-		self.errors = errors
-		self.device = Shellys['Shelly25_Roller']
-		self.type = 'shelly25_roller'
-		self.check_device()
-		self.device['url'] = self.device['url'].format(ip = '{ip}', type = 'roller', channel = '{channel}', command = '{command}')
+	def __init__(self):
+		pass
 
 	def check_device(self):
+		print(self.device['url'].format(ip = self.ip, type = '', channel = '', command = '')[:-2])
 		r = requests.get(self.device['url'].format(ip = self.ip, type = 'status', channel = '', command = '')[:-2])
 		if (r.status_code != 200):
 			print('IP check failed with returncode: ' + str(r.status_code))
@@ -35,6 +31,27 @@ class Shelly25_Roller:
 				self.error(1)
 			else:
 				print('Device type check completed')
+
+	def get_attr(self, attr : str, channel : str = '0'):
+		if (channel in self.device['channel']):
+			if (attr in self.device['attributes']):
+				r = requests.get(self.device['url'].format(ip = self.ip, type = self.device['type'].replace('s', ''), channel = channel, command = '')[:-1])
+				return r.json()[attr]
+			elif (attr == 'all'):
+				r = requests.get(self.device['url'].format(ip = self.ip, type = self.device['type'].replace('s', ''), channel = channel, command = '')[:-1])
+				return r.json()
+	
+	def error(self, code):
+		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
+
+class Shelly25_Roller(Shelly):
+
+	def __init__(self, ip : str):
+		self.ip = ip
+		self.errors = errors
+		self.device = Shellys['Shelly25_Roller']
+		self.type = 'shelly25_roller'
+		self.check_device()
 
 	def go(self, command : str, value : int = None, channel : str = '0'):
 		if (command in self.device['commands']['go'] and channel in self.device['channel']):
@@ -73,19 +90,7 @@ class Shelly25_Roller:
 			r = requests.get(self.device['url'].format(ip = self.ip, channel = channel + '/calibrate', command = ''))
 			print(r.text)
 
-	def get_attr(self, attr : str, channel : str = '0'):
-		if (channel in self.device['channel']):
-			if (attr in self.device['attributes']):
-				r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = ''))
-				return r.json()[attr]
-			elif (attr == 'all'):
-				r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = ''))
-				return r.json()
-
-	def error(self, code):
-		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
-
-class Shelly25_Relay:
+class Shelly25_Relay(Shelly):
 
 	def __init__(self, ip : str):
 		self.ip = ip
@@ -93,24 +98,6 @@ class Shelly25_Relay:
 		self.device = Shellys['Shelly25_Relay']
 		self.type = 'shelly25_relay'
 		self.check_device()
-		self.device['url'] = self.device['url'].format(ip = '{ip}', type = 'relay', channel = '{channel}', command = '{command}')
-
-	def check_device(self):
-		r = requests.get(self.device['url'].format(ip = self.ip, type = 'status', channel = '', command = '')[:-2])
-		if (r.status_code != 200):
-			print('IP check failed with returncode: ' + str(r.status_code))
-			self.error(0)
-		else:
-			print('IP check completed\n')
-			if (self.device['type'] not in r.json()):
-				print('Device type check failed')
-				for shelly_name, shelly in Shellys.items():
-					if shelly['type'] in r.json():
-						print('Wrong device type assigned: ' + self.type + ', device is of type: ' + shelly_name + '\n')
-						break
-				self.error(1)
-			else:
-				print('Device type check completed')
 
 	def turn(self, command : str, channel : str = '0', time : int = None):
 		if (command in self.device['commands']['turn'] and channel in self.device['channel']):
@@ -125,19 +112,7 @@ class Shelly25_Relay:
 				except Exception as ex:
 					print('Failed with output: ' + str(ex))
 
-	def get_attr(self, attr : str, channel : str = '0'):
-		if (channel in self.device['channel']):
-			if (attr in self.device['attributes']):
-				r = requests.get(self.device['url'].format(ip = self.ip, channel = '0', command = ''))
-				return r.json()[attr]
-			elif (attr == 'all'):
-				r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = ''))
-				return r.json()
-	
-	def error(self, code):
-		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
-
-class Shelly_Dimmer:
+class Shelly_Dimmer(Shelly):
 	
 	def __init__(self, ip : str):
 		self.ip = ip
@@ -145,26 +120,7 @@ class Shelly_Dimmer:
 		self.device = Shellys['Shelly_Dimmer']
 		self.type = 'shelly_dimmer'
 		self.check_device()
-
-	def check_device(self):
-		print(self.device['url'].format(ip = self.ip, type = '', channel = '', command = '')[:-2])
-		r = requests.get(self.device['url'].format(ip = self.ip, type = 'status', channel = '', command = '')[:-2])
-		if (r.status_code != 200):
-			print('IP check failed with returncode: ' + str(r.status_code))
-			self.error(0)
-		else:
-			print('IP check completed\n')
-			if (self.device['type'] not in r.json()):
-				print('Device type check failed')
-				for shelly_name, shelly in Shellys.items():
-					if shelly['type'] in r.json():
-						print('Wrong device type assigned: ' + self.type + ', device is of type: ' + shelly_name + '\n')
-						break
-				self.error(1)
-			else:
-				print('Device type check completed')
 				
-
 	def turn(self, command : str, brightness : int = None, time : int = None, channel : str = '0'):
 		if (command in self.device['commands']['turn'] and channel in self.device['channel']):
 			if (brightness == None):
@@ -202,19 +158,7 @@ class Shelly_Dimmer:
 		except Exception as ex:
 			print('Failed with output: ' + str(ex))
 
-	def get_attr(self, attr : str, channel : str = '0'):
-		if (channel in self.device['channel']):
-			if (attr in self.device['attributes']):
-				r = requests.get(self.device['url'].format(ip = self.ip, type = 'light', channel = channel, command = '')[:-1])
-				return r.json()[attr]
-			elif (attr == 'all'):
-				r = requests.get(self.device['url'].format(ip = self.ip, type = 'light', channel = channel, command = '')[:-1])
-				return r.json()
-
-	def error(self, code):
-		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
-
-class Shelly_Plug:
+class Shelly_Plug(Shelly):
 
 	def __init__(self, ip : str):
 		self.ip = ip
@@ -222,24 +166,6 @@ class Shelly_Plug:
 		self.device = Shellys['Shelly_Plug']
 		self.type = 'shelly_plug'
 		self.check_device()
-		self.device['url'] = self.device['url'].format(ip = '{ip}', type = 'relay', channel = '{channel}', command = '{command}')
-
-	def check_device(self):
-		r = requests.get(self.device['url'].format(ip = self.ip, type = 'status', channel = '', command = '')[:-2])
-		if (r.status_code != 200):
-			print('IP check failed with returncode: ' + str(r.status_code))
-			self.error(0)
-		else:
-			print('IP check completed\n')
-			if (self.device['type'] not in r.json()):
-				print('Device type check failed')
-				for shelly_name, shelly in Shellys.items():
-					if shelly['type'] in r.json():
-						print('Wrong device type assigned: ' + self.type + ', device is of type: ' + shelly_name + '\n')
-						break
-				self.error(1)
-			else:
-				print('Device type check completed')
 
 	def turn(self, command : str, time : int = None, channel : str = '0'):
 		if (time == None):
@@ -254,19 +180,7 @@ class Shelly_Plug:
 			except Exception as ex:
 				print('Failed with output: ' + str(ex))
 
-	def get_attr(self, attr : str, channel : str = '0'):
-		if (channel in self.device['channel']):
-			if (attr in self.device['attributes']):
-				r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = ''))
-				return r.json()[attr]
-			elif (attr == 'all'):
-				r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = ''))
-				return r.json()
-
-	def error(self, code):
-		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
-
-class Shelly1:
+class Shelly1(Shelly):
 
 	def __init__(self, ip):
 		self.ip = ip
@@ -274,24 +188,6 @@ class Shelly1:
 		self.device = Shellys['Shelly1']
 		self.type = 'shelly1'
 		self.check_device()
-		self.device['url'] = self.device['url'].format(ip = '{ip}', type = 'relay', channel = '{channel}', command = '{command}')
-
-	def check_device(self):
-		r = requests.get(self.device['url'].format(ip = self.ip, type = 'status', channel = '', command = '')[:-2])
-		if (r.status_code != 200):
-			print('IP check failed with returncode: ' + str(r.status_code))
-			self.error(0)
-		else:
-			print('IP check completed\n')
-			if (self.device['type'] not in r.json()):
-				print('Device type check failed')
-				for shelly_name, shelly in Shellys.items():
-					if shelly['type'] in r.json():
-						print('Wrong device type assigned: ' + self.type + ', device is of type: ' + shelly_name + '\n')
-						break
-				self.error(1)
-			else:
-				print('Device type check completed')
 
 	def turn(self, command : str, time : int = None, channel : str = '0'):
 		if (time == None):
@@ -305,18 +201,6 @@ class Shelly1:
 					print(r.text)
 			except Exception as ex:
 				print('Failed with output: ' + str(ex))
-
-	def get_attr(self, attr : str, channel : str = '0'):
-		if (channel in self.device['channel']):
-			if (attr in self.device['attributes']):
-				r = requests.get(self.device['url'].format(ip = self.ip, channel = '0', command = ''))
-				return r.json()[attr]
-			elif (attr == 'all'):
-				r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = ''))
-				return r.json()
-
-	def error(self, code):
-		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
 
 def auto_assign(ip : str):######################################################################################
 	r"""Auto assigns an IP to a shelly Object
@@ -623,7 +507,7 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 1, verbose : 
 if __name__ == '__main__':
 
 	#for arg in sys.argv:
-	shelly_instances = device_discovery('192.168.100.43', '192.168.100.44', 5, True, True, True)
+	shelly_instances = device_discovery('192.168.100.40', '192.168.100.175', 3, True, True, True)
 	for shelly_type, shelly_instance_list in shelly_instances.items():
 		print(shelly_type)
 		for shelly_instance in shelly_instance_list:
