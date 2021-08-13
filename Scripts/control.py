@@ -18,13 +18,16 @@ class Shelly:
 		self.check_device()
 
 	def check_device(self):
-		print(self.device['url'].format(ip = self.ip, type = '', channel = '', command = '')[:-2])
+		print(check_device_type(self.ip))
+		if (check_device_type(self.ip) != self.__class__.__name__):
+			self.error(1)
+		"""
 		r = requests.get(self.device['url'].format(ip = self.ip, type = 'status', channel = '', command = '')[:-2])
 		if (r.status_code != 200):
 			print('IP check failed with returncode: ' + str(r.status_code))
 			self.error(0)
 		else:
-			print('IP check completed\n')
+			#print('IP check completed\n')
 			if (self.device['type'] not in r.json()):
 				print('Device type check failed')
 				for shelly_name, shelly in Shellys.items():
@@ -33,7 +36,9 @@ class Shelly:
 						break
 				self.error(1)
 			else:
-				print('Device type check completed')
+				pass
+				#print('Device type check completed')
+		"""
 
 	def get_attr(self, attr : str, channel : str = '0'):
 		if (channel in self.device['channel']):
@@ -425,6 +430,8 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 3, verbose : 
 		'Shelly_Plug' : [
 		],
 		'Shelly1' : [
+		],
+		'Shelly_i3' : [
 		]
 	}
 	shellys_instances = {
@@ -437,6 +444,8 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 3, verbose : 
 		'Shelly_Plug' : [
 		],
 		'Shelly1' : [
+		],
+		'Shelly_i3' : [
 		]
 	}
 	for a in range(ip_start_list[0], ip_end_list[0] + 1):
