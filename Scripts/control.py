@@ -503,6 +503,7 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 1, verbose : 
 	
 #Shelly i3 support
 #Shelly RGB support
+#secure.py zusammenführen
 
 if __name__ == '__main__':
 
