@@ -10,9 +10,12 @@ errors = ['Ip could not be reached', 'Device Type does not match']
 url = 'http://{ip}/{type}/{channel}?{command}'
 
 class Shelly:
-
-	def __init__(self):
-		pass
+	
+	def __init__(self, ip : str):
+		self.ip = ip
+		self.errors = errors
+		self.device = Shellys[self.__class__.__name__]
+		self.check_device()
 
 	def check_device(self):
 		print(self.device['url'].format(ip = self.ip, type = '', channel = '', command = '')[:-2])
@@ -26,7 +29,7 @@ class Shelly:
 				print('Device type check failed')
 				for shelly_name, shelly in Shellys.items():
 					if shelly['type'] in r.json():
-						print('Wrong device type assigned: ' + self.type + ', device is of type: ' + shelly_name + '\n')
+						print('Wrong device type assigned: ' + self.__class__.__name__ + ', device is of type: ' + shelly_name + '\n')
 						break
 				self.error(1)
 			else:
@@ -45,13 +48,6 @@ class Shelly:
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
 
 class Shelly25_Roller(Shelly):
-
-	def __init__(self, ip : str):
-		self.ip = ip
-		self.errors = errors
-		self.device = Shellys['Shelly25_Roller']
-		self.type = 'shelly25_roller'
-		self.check_device()
 
 	def go(self, command : str, value : int = None, channel : str = '0'):
 		if (command in self.device['commands']['go'] and channel in self.device['channel']):
@@ -92,13 +88,6 @@ class Shelly25_Roller(Shelly):
 
 class Shelly25_Relay(Shelly):
 
-	def __init__(self, ip : str):
-		self.ip = ip
-		self.errors = errors
-		self.device = Shellys['Shelly25_Relay']
-		self.type = 'shelly25_relay'
-		self.check_device()
-
 	def turn(self, command : str, channel : str = '0', time : int = None):
 		if (command in self.device['commands']['turn'] and channel in self.device['channel']):
 			if (time == None):
@@ -113,13 +102,6 @@ class Shelly25_Relay(Shelly):
 					print('Failed with output: ' + str(ex))
 
 class Shelly_Dimmer(Shelly):
-	
-	def __init__(self, ip : str):
-		self.ip = ip
-		self.errors = errors
-		self.device = Shellys['Shelly_Dimmer']
-		self.type = 'shelly_dimmer'
-		self.check_device()
 				
 	def turn(self, command : str, brightness : int = None, time : int = None, channel : str = '0'):
 		if (command in self.device['commands']['turn'] and channel in self.device['channel']):
@@ -160,13 +142,6 @@ class Shelly_Dimmer(Shelly):
 
 class Shelly_Plug(Shelly):
 
-	def __init__(self, ip : str):
-		self.ip = ip
-		self.errors = errors
-		self.device = Shellys['Shelly_Plug']
-		self.type = 'shelly_plug'
-		self.check_device()
-
 	def turn(self, command : str, time : int = None, channel : str = '0'):
 		if (time == None):
 			if (command in self.device['commands']['turn']):
@@ -182,13 +157,6 @@ class Shelly_Plug(Shelly):
 
 class Shelly1(Shelly):
 
-	def __init__(self, ip):
-		self.ip = ip
-		self.errors = errors
-		self.device = Shellys['Shelly1']
-		self.type = 'shelly1'
-		self.check_device()
-
 	def turn(self, command : str, time : int = None, channel : str = '0'):
 		if (time == None):
 			if (command in self.device['commands']['turn']):
@@ -202,22 +170,9 @@ class Shelly1(Shelly):
 			except Exception as ex:
 				print('Failed with output: ' + str(ex))
 
-def auto_assign(ip : str):######################################################################################
-	r"""Auto assigns an IP to a shelly Object
-	
-	auto_assign(ip : str)
+class Shelly_i3(Shelly):
 
-	:param ip: A String containing the IP of the Shelly
-	"""
-	r = requests.get('http://{0}/status'.format(ip))
-	if (r.status_code != 200):
-		print('IP check failed')
-	else:
-		#print('IP check completed\n')
-		for shelly_name, shelly in Shellys.items():
-			if shelly['type'] in r.json():
-				print('Shelly is of type: ' + shelly_name + '\n')
-				return Shellys['classes'][shelly_name](ip)
+	pass
 
 Shellys = {
 	'Shelly25_Relay' : {
@@ -384,9 +339,20 @@ Shellys = {
 	}
 }
 
-def check_device_type(ip : str, timeout : int = 5, verbose : bool = False, instantiate : bool = False):######################################################################################
+def check_device_type(ip : str, timeout : int = 3, verbose : bool = False, instantiate : bool = False):
 	r"""
-	TBD
+	Returns the device type or an instance of it of a given ip. Returns False when no device type could be associated or the ip is unreachable
+
+	check_device(ip : str, timeout : int, verbose : bool, instantiate : bool)
+
+	:param ip: A string containing the ip to be scanned
+
+	:param timeout: An integer defining the maximum time before a http request times out without a response (Defaults to 3)
+
+	:param verbose: A boolean to activate verbose output (Defaults to False)
+
+	:param instantiate: A boolean to activate the return of instances
+
 	"""
 	ip = ip.replace('http://','').replace('/status', '').replace('/','')
 	try: #Try to establish a connection
@@ -429,20 +395,22 @@ def check_device_type(ip : str, timeout : int = 5, verbose : bool = False, insta
 						return Shellys['type'][type][soup.find('head').title.get_text()][len(r1.json()['relays']) - 1] #Shelly1 or Shelly25_Roller
 
 
-def device_discovery(ip_start : str, ip_end : str, timeout : int = 1, verbose : bool = False, beautify : bool = False, instantiate : bool = False):
+def device_discovery(ip_start : str, ip_end : str, timeout : int = 3, verbose : bool = False, beautify : bool = False, instantiate : bool = False, outputFile : bool = False):
 	r"""Discovers devices in a given ip range, returning a Dict of IP's 
 	
 	device_discovery(ip_start : str, ip_end : str, timeout : int, verbose : bool, beautify : bool)
 
 	:param ip_start: A String containing the starting IP
 
-	:param ip_end: A String containing the ending IP, must be higher!
+	:param ip_end: A String containing the ending IP, must be higher than ip_start!
 
-	:param timeout: An integer defining the maximum time before a http request times out
+	:param timeout: An integer defining the maximum time before a http request times out without a response (Defaults to 3)
 
-	:param verbose: A boolean to give verbose output
+	:param verbose: A boolean to activate verbose output (Defaults to False)
 
-	:param beautify: A boolean to beautify the output of this function in the shell
+	:param beautify: A boolean to beautify the output of this function in the shell (Defaults to False)
+
+	:param outputFile: A boolean to activate the outputFile (Shellys.json) located in the same directory
 
 	"""
 	ip_start_list = list(map(int,ip_start.split('.')))#[::-1]
@@ -498,6 +466,9 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 1, verbose : 
 		print(json.dumps(shellys, sort_keys = True, indent=4))
 	else:
 		print(shellys)
+	if outputFile:
+		with open('Shellys.json', 'w') as outfile:
+			json.dump(shellys, outfile)
 	if instantiate:
 		return shellys_instances
 	
@@ -508,14 +479,13 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 1, verbose : 
 if __name__ == '__main__':
 
 	#for arg in sys.argv:
-	shelly_instances = device_discovery('192.168.100.40', '192.168.100.175', 3, True, True, True)
+	shelly_instances = device_discovery('192.168.100.40', '192.168.100.50', 3, True, True, True, True)
 	for shelly_type, shelly_instance_list in shelly_instances.items():
 		print(shelly_type)
 		for shelly_instance in shelly_instance_list:
 			print(shelly_instance)
 			print(shelly_instance.get_attr('all'))
-	#a = auto_assign('FloziDimmer')
+	#a = check_device_type('FloziDimmer', 3, True, True)
 	#print(a.get_attr('brightness'))
-	#a.brightness(67)
 	#s = shelly_dimmer('192.168.100.123')
 	#print(s.get_attr('all'))
