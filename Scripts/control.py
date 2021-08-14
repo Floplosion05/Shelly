@@ -18,7 +18,6 @@ class Shelly:
 		self.check_device()
 
 	def check_device(self):
-		print(check_device_type(self.ip))
 		if (check_device_type(self.ip) != self.__class__.__name__):
 			self.error(1)
 		"""
@@ -389,7 +388,6 @@ def check_device_type(ip : str, timeout : int = 3, verbose : bool = False, insta
 				soup = BeautifulSoup(r2.content, 'html.parser')
 				if soup.find('head').title.get_text() in Shellys['type'][type] and soup.find('head').title.get_text() != 'Shelly Switch': #Shelly Plug
 					if instantiate:
-						print(Shellys['classes'][Shellys['type'][type][soup.find('head').title.get_text()][0]])
 						return Shellys['classes'][Shellys['type'][type][soup.find('head').title.get_text()][0]](ip)
 					else:
 						return Shellys['type'][type][soup.find('head').title.get_text()][0]
@@ -418,8 +416,8 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 3, verbose : 
 	:param outputFile: A boolean to activate the outputFile (Shellys.json) located in the same directory
 
 	"""
-	ip_start_list = list(map(int,ip_start.split('.')))#[::-1]
-	ip_end_list = list(map(int, ip_end.split('.')))#[::-1]
+	ip_start_list = list(map(int,ip_start.split('.')))
+	ip_end_list = list(map(int, ip_end.split('.')))
 	shellys = {
 		'Shelly25_Relay' : [
 		],
@@ -470,14 +468,16 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 3, verbose : 
 								print(temp_ip + ' : ' + str(temp_device_type))
 					else:
 						continue
-					
-	if beautify:
-		print(json.dumps(shellys, sort_keys = True, indent=4))
-	else:
-		print(shellys)
+
 	if outputFile:
-		with open('Shellys.json', 'w') as outfile:
+		with open('Shellys.json', 'w+') as outfile:
 			json.dump(shellys, outfile)
+	else:
+		if beautify:
+			print(json.dumps(shellys, sort_keys = True, indent=4))
+		else:
+			print(shellys)
+		
 	if instantiate:
 		return shellys_instances
 	
@@ -490,7 +490,6 @@ if __name__ == '__main__':
 	#for arg in sys.argv:
 	shelly_instances = device_discovery('192.168.100.40', '192.168.100.50', 3, False, True, True, True)
 	for shelly_type, shelly_instance_list in shelly_instances.items():
-		print(shelly_type)
 		for shelly_instance in shelly_instance_list:
 			print(shelly_instance.get_attr('all'))
 	#a = check_device_type('FloziDimmer', 3, True, True)
