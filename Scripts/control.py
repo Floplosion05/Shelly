@@ -488,7 +488,7 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 3, verbose : 
 if __name__ == '__main__':
 
 	#for arg in sys.argv:
-	shelly_instances = device_discovery('192.168.100.40', '192.168.100.50', 3, True, True, True, True)
+	shelly_instances = device_discovery('192.168.100.40', '192.168.100.50', 3, False, True, True, True)
 	for shelly_type, shelly_instance_list in shelly_instances.items():
 		print(shelly_type)
 		for shelly_instance in shelly_instance_list:
