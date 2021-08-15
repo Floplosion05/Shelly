@@ -106,38 +106,29 @@ class Shelly25_Relay(Shelly):
 					print('Failed with output: ' + str(ex))
 
 class Shelly_Dimmer(Shelly):
-				
-	def turn(self, command : str, brightness : int = None, time : int = None, channel : str = '0'):
-		if (command in self.device['commands']['turn'] and channel in self.device['channel']):
-			if (brightness == None):
-				if (time == None):
-					r = requests.get(self.device['url'].format(ip = self.ip, type = 'light', channel = channel, command = 'turn=' + command))
-					print(r.text)
-				else:
-					try:
-						if (0 <= time <= 120):
-							r = requests.get(self.device['url'].format(ip = self.ip, type = 'light', channel = channel, command = 'turn=' + command + '&timer=' + str(time)))
-							print(r.text)
-					except Exception as ex:
-						print('Failed with output: ' + str(ex))
-			else:
-				if (time == None):
-					try:
-						if (0 <= brightness <= 100):
-							r = requests.get(self.device['url'].format(ip = self.ip, type = 'light', channel = channel, command = 'turn=' + command + '&brightness=' + str(brightness)))
-							print(r.text)
-					except Exception as ex:
-						print('Failed with output: ' + str(ex))
-				else:
-					try:
-						if (0 <= time <= 120 and 0 <= brightness <= 120):
-							r = requests.get(self.device['url'].format(ip = self.ip, type = 'light', channel = channel, command = 'turn=' + command + '&brightness=' + str(brightness) + '&timer=' + str(time)))
-							print(r.text)
-					except Exception as ex:
-						print('Failed with output: ' + str(ex))
 	
-	def turn2(self, command : str = None, brightness : int = None, timer : int = None, channel : str = '0'):
-		print(locals())
+	def turn(self, command : str = None, brightness : int = None, timer : int = None, channel : str = '0'):
+		if channel in self.device['channel']:
+			print(locals())
+			temp_params = ''
+			if command in self.device['commands']['turn']:
+				temp_params += 'turn=' + command + '&'
+			if brightness:
+				try:
+					if 0 <= brightness <= 100:
+						temp_params += 'brightness=' + str(brightness) + '&'
+				except Exception as ex:
+					print('Failed with output: ' + str(ex))
+			if timer:
+				try:
+					if 0 <= timer <= 120:
+						temp_params += 'timer=' + str(timer)
+				except Exception as ex:
+					print('Failed with output: ' + str(ex))
+			temp_params = temp_params.rstrip('&')
+			print(self.device['url'].format(ip = self.ip, type = 'light', channel = channel, command = temp_params))
+			r = requests.get(self.device['url'].format(ip = self.ip, type = 'light', channel = channel, command = temp_params))
+			print(r.text)
 	
 	def brightness(self, brightness : int, channel : str = '0'):
 		try:
@@ -254,12 +245,6 @@ Shellys = {
 				'on',
 				'off',
 				'toggle'
-			],
-			'bright' : [
-				'brightness'
-			],
-			'time' : [
-				'timer'
 			]
 		},
 		'channel' : [
@@ -360,10 +345,7 @@ Shellys = {
 				'2',
 				'3',
 				'4'
-			],
-			'red' : [],
-			'green' : [],
-			'blue' : []
+			]
 		},
 		'channel' : [
 			'0'
@@ -585,6 +567,7 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 3, verbose : 
 	
 #Shelly RGB support
 #secure.py zusammenführen
+#shorten code like Shelly_Dimmer
 
 if __name__ == '__main__':
 
