@@ -136,6 +136,9 @@ class Shelly_Dimmer(Shelly):
 					except Exception as ex:
 						print('Failed with output: ' + str(ex))
 	
+	def turn2(self, command : str = None, brightness : int = None, timer : int = None, channel : str = '0'):
+		print(locals())
+	
 	def brightness(self, brightness : int, channel : str = '0'):
 		try:
 			if (0 <= brightness <= 100):
