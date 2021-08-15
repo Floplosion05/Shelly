@@ -408,9 +408,9 @@ Shellys = {
 			'relays' : [
 				'Shelly25_Relay'
 			],
-			'rollers' : {
+			'rollers' : [
 				'Shelly25_Roller'
-			}
+			]
 		},
 		'SHDM-1' : [
 			'Shelly_Dimmer'
@@ -580,18 +580,17 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 3, verbose : 
 	if instantiate:
 		return shellys_instances
 	
-#Shelly i3 support
 #Shelly RGB support
 #secure.py zusammenführen
 
 if __name__ == '__main__':
 
 	#for arg in sys.argv:
-	shelly_instances = device_discovery('192.168.100.40', '192.168.100.50', 3, False, True, True)
+	shelly_instances = device_discovery('192.168.100.0', '192.168.100.255', 3, False, True, True)
 	for shelly_type, shelly_instance_list in shelly_instances.items():
 		for shelly_instance in shelly_instance_list:
 			print(shelly_instance.get_attr('all'))
 	#a = check_device_type('FloziDimmer', 3, True, True)
 	#print(a.get_attr('brightness'))
-	#s = shelly_dimmer('192.168.100.123')
+	#s = Shelly_Dimmer('192.168.100.123')
 	#print(s.get_attr('all'))
