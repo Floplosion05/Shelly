@@ -178,8 +178,13 @@ class Shelly_i3(Shelly):
 
 	pass
 
+class Shelly_RGBW2(Shelly):
+
+	pass
+
 Shellys = {
 	'Shelly25_Relay' : {
+		'class' : Shelly25_Relay,
         'url' : url,
         'type' : 'relays',
         'commands' : {
@@ -207,6 +212,7 @@ Shellys = {
         ]
     },
 	'Shelly25_Roller' : {
+		'class' : Shelly25_Roller,
 		'url' : url,
 		'type' : 'rollers',
 		'commands' : {
@@ -237,6 +243,7 @@ Shellys = {
 		]
 	},
 	'Shelly_Dimmer' : {
+		'class' : Shelly_Dimmer,
 		'url' : url,
 		'type' : 'lights',
 		'commands' : {
@@ -266,6 +273,7 @@ Shellys = {
 		]
 	},
 	'Shelly_Plug' : {
+		'class' : Shelly_Plug,
 		'url' : url,
 		'type' : 'relays',
 		'commands' : {
@@ -292,6 +300,7 @@ Shellys = {
 		]
 	},
 	'Shelly1' : {
+		'class' : Shelly1,
 		'url' : url,
 		'type' : 'relays',
 		'commands' : {
@@ -318,6 +327,7 @@ Shellys = {
 		]
 	},
 	'Shelly_i3' : {
+		'class' : Shelly_i3,
 		'url' : url,
 		'type' : 'inputs',
 		'channel' : [
@@ -332,6 +342,7 @@ Shellys = {
 		]
 	},
 	'Shelly_RGBW2' : {
+		'class' : Shelly_RGBW2,
 		'url' : url,
 		'type' : 'lights',
 		'commands' : {
@@ -392,6 +403,28 @@ Shellys = {
 			'Shelly_i3'
 		]
 	},
+	'type2' : {
+		'SHSW-25' : {
+			'relays' : [
+				'Shelly25_Relay'
+			],
+			'rollers' : {
+				'Shelly25_Roller'
+			}
+		},
+		'SHDM-1' : [
+			'Shelly_Dimmer'
+		],
+		'SHPLG-S' : [
+			'Shelly_Plug'
+		],
+		'SHIX3-1' : [
+			'Shelly_i3'
+		],
+		'SHRGBW2' : [
+			'Shelly_RGBW2'
+		]
+	},
 	'classes' : {
 		'Shelly25_Roller' : Shelly25_Roller,
 		'Shelly25_Relay' : Shelly25_Relay,
@@ -416,45 +449,44 @@ def check_device_type(ip : str, timeout : int = 3, verbose : bool = False, insta
 	:param instantiate: A boolean to activate the return of instances
 
 	"""
-	ip = ip.replace('http://','').replace('/status', '').replace('/','')
-	try: #Try to establish a connection
-		r1 = requests.get('http://' + ip + '/status', timeout = timeout)
-		r2 = requests.get('http://' + ip, timeout = timeout)
+	ip = ip.replace('http://', '').replace('/status', '').replace('/', '')
+	try:
+		r1 = requests.get('http://' + ip + '/shelly', timeout = timeout)
+		r2 = requests.get('http://' + ip + '/status', timeout = timeout)
 		try:
 			r1.json()
-		except:
+			r2.json()
+		except Exception as ex:
 			if verbose:
-				print('Failed to convert Html content to JSON')
+				print('Failed to convert Html content to JSON\n' + str(ex) + ' : ' + ip)
 			return False
-	except requests.exceptions.RequestException as e: #Catch exceptions like Timeout
+	except Exception as ex:
 		if verbose:
-			print('Failed with error: ' + str(e))
+			print('Failed to establish a connection\n' + str(ex) + ' : ' + ip)
 		return False
 
-	if r1.status_code != 200: #Catch unsuccesful connection
+	if r1.status_code != 200 or r2.status_code != 200:
 		if verbose:
-			print('IP not found, errorcode: ' + str(r1.status_code))
+			print('Failed to establish a connection\nStatuscode: ' + str(r1.status_code) + ' : ' + ip)
+			print('Failed to establish a connection\nStatuscode: ' + str(r2.status_code) + ' : ' + ip)
 		return False
 	else:
-		for type in Shellys['type']: #Loop through all Shelly types
-			if type in r1.json() and type != 'relays': #When the keyword is found in the json response and its not relays: lights or rollers
-				if instantiate:
-					return Shellys['classes'][Shellys['type'][type][0]](ip)
+		for type in Shellys['type2']:
+			if r1.json()['type'] == type:
+				if type != 'SHSW-25':
+					if instantiate:
+						return Shellys[Shellys['type2'][type][0]]['class'](ip)
+					else:
+						return Shellys['type2'][type][0]
 				else:
-					return Shellys['type'][type][0]
-			elif type in r1.json(): #When the keyowrd is found but it is relays: we have to 
-				soup = BeautifulSoup(r2.content, 'html.parser')
-				if soup.find('head').title.get_text() in Shellys['type'][type] and soup.find('head').title.get_text() != 'Shelly Switch': #Shelly Plug
-					if instantiate:
-						return Shellys['classes'][Shellys['type'][type][soup.find('head').title.get_text()][0]](ip)
-					else:
-						return Shellys['type'][type][soup.find('head').title.get_text()][0]
-				elif soup.find('head').title.get_text() in Shellys['type'][type]: #Shelly Switch
-					if instantiate:
-						return Shellys['classes'][Shellys['type'][type][soup.find('head').title.get_text()][len(r1.json()['relays']) - 1]](ip)#Shelly1 or Shelly25_Roller
-					else:
-						return Shellys['type'][type][soup.find('head').title.get_text()][len(r1.json()['relays']) - 1] #Shelly1 or Shelly25_Roller
-
+					for mode in Shellys['type2'][type]:
+						if mode in r2.json():
+							if instantiate:
+								return Shellys[Shellys['type2'][type][mode][0]]['class'](ip)
+							else:
+								return Shellys['type2'][type][mode][0]
+							break
+				break
 
 def device_discovery(ip_start : str, ip_end : str, timeout : int = 3, verbose : bool = False, beautify : bool = False, instantiate : bool = False, outputFile : bool = False):
 	r"""Discovers devices in a given ip range, returning a Dict of IP's 
@@ -488,6 +520,8 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 3, verbose : 
 		'Shelly1' : [
 		],
 		'Shelly_i3' : [
+		],
+		'Shelly_RGBW2' : [
 		]
 	}
 	shellys_instances = {
@@ -502,6 +536,8 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 3, verbose : 
 		'Shelly1' : [
 		],
 		'Shelly_i3' : [
+		],
+		'Shelly_RGBW2' : [
 		]
 	}
 	for a in range(ip_start_list[0], ip_end_list[0] + 1):
@@ -509,6 +545,7 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 3, verbose : 
 			for c in range(ip_start_list[2], ip_end_list[2] + 1):
 				for d in range(ip_start_list[3], ip_end_list[3] + 1):
 					temp_ip = str(a) + '.' + str(b) + '.' + str(c) + '.' + str(d)
+					print(temp_ip)
 					temp_device_type = check_device_type(temp_ip, timeout, verbose, instantiate)
 
 					if temp_device_type:
@@ -521,6 +558,7 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 3, verbose : 
 							try:
 								shellys[temp_device_type].append(temp_ip)
 							except KeyError as e:
+								print('lol')
 								continue
 							if verbose:
 								print(temp_ip + ' : ' + str(temp_device_type))
@@ -545,9 +583,8 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 3, verbose : 
 
 if __name__ == '__main__':
 
-	print(check_device_type('192.168.100.167', verbose=True))
 	#for arg in sys.argv:
-	#shelly_instances = device_discovery('192.168.100.40', '192.168.100.50', 3, False, True, True, True)
+	shelly_instances = device_discovery('192.168.100.40', '192.168.100.50', 3, True, True)
 	#for shelly_type, shelly_instance_list in shelly_instances.items():
 	#	for shelly_instance in shelly_instance_list:
 	#		print(shelly_instance.get_attr('all'))
