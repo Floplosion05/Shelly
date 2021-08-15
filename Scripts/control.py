@@ -415,6 +415,9 @@ Shellys = {
 		'SHDM-1' : [
 			'Shelly_Dimmer'
 		],
+		'SHDM-2' : [
+			'Shelly_Dimmer'
+		],
 		'SHPLG-S' : [
 			'Shelly_Plug'
 		],
@@ -449,6 +452,7 @@ def check_device_type(ip : str, timeout : int = 3, verbose : bool = False, insta
 	:param instantiate: A boolean to activate the return of instances
 
 	"""
+
 	ip = ip.replace('http://', '').replace('/status', '').replace('/', '')
 	try:
 		r1 = requests.get('http://' + ip + '/shelly', timeout = timeout)
@@ -464,7 +468,7 @@ def check_device_type(ip : str, timeout : int = 3, verbose : bool = False, insta
 		if verbose:
 			print('Failed to establish a connection\n' + str(ex) + ' : ' + ip)
 		return False
-
+	
 	if r1.status_code != 200 or r2.status_code != 200:
 		if verbose:
 			print('Failed to establish a connection\nStatuscode: ' + str(r1.status_code) + ' : ' + ip)
@@ -545,7 +549,6 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 3, verbose : 
 			for c in range(ip_start_list[2], ip_end_list[2] + 1):
 				for d in range(ip_start_list[3], ip_end_list[3] + 1):
 					temp_ip = str(a) + '.' + str(b) + '.' + str(c) + '.' + str(d)
-					print(temp_ip)
 					temp_device_type = check_device_type(temp_ip, timeout, verbose, instantiate)
 
 					if temp_device_type:
@@ -584,10 +587,10 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 3, verbose : 
 if __name__ == '__main__':
 
 	#for arg in sys.argv:
-	shelly_instances = device_discovery('192.168.100.40', '192.168.100.50', 3, True, True)
-	#for shelly_type, shelly_instance_list in shelly_instances.items():
-	#	for shelly_instance in shelly_instance_list:
-	#		print(shelly_instance.get_attr('all'))
+	shelly_instances = device_discovery('192.168.100.40', '192.168.100.50', 3, False, True, True)
+	for shelly_type, shelly_instance_list in shelly_instances.items():
+		for shelly_instance in shelly_instance_list:
+			print(shelly_instance.get_attr('all'))
 	#a = check_device_type('FloziDimmer', 3, True, True)
 	#print(a.get_attr('brightness'))
 	#s = shelly_dimmer('192.168.100.123')
