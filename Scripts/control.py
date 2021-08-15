@@ -317,6 +317,61 @@ Shellys = {
 			'source'
 		]
 	},
+	'Shelly_i3' : {
+		'url' : url,
+		'type' : 'inputs',
+		'channel' : [
+			'0',
+			'1',
+			'2'
+		],
+		'attributes' : [
+			'input',
+			'event',
+			'event_cnt'
+		]
+	},
+	'Shelly_RGBW2' : {
+		'url' : url,
+		'type' : 'lights',
+		'commands' : {
+			'turn' : [
+				'on',
+				'off',
+				'toggle'
+			],
+			'effect' : [
+				'0',
+				'1',
+				'2',
+				'3',
+				'4'
+			],
+			'red' : [],
+			'green' : [],
+			'blue' : []
+		},
+		'channel' : [
+			'0'
+		],
+		'attributes' : [
+			'ison',
+			'source',
+			'has_timer',
+			'timer_started',
+			'timer_duration',
+			'timer_remaining',
+			'mode',
+			'red',
+			'green',
+			'blue',
+			'white',
+			'gain',
+			'effect',
+			'power',
+			'overpower'
+		]
+	},
 	'type' : {
 		'lights' : [
 			'Shelly_Dimmer'
@@ -332,6 +387,9 @@ Shellys = {
 		},
 		'rollers' : [
 			'Shelly25_Roller'
+		],
+		'inputs' : [
+			'Shelly_i3'
 		]
 	},
 	'classes' : {
@@ -487,11 +545,12 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 3, verbose : 
 
 if __name__ == '__main__':
 
+	print(check_device_type('192.168.100.167', verbose=True))
 	#for arg in sys.argv:
-	shelly_instances = device_discovery('192.168.100.40', '192.168.100.50', 3, False, True, True, True)
-	for shelly_type, shelly_instance_list in shelly_instances.items():
-		for shelly_instance in shelly_instance_list:
-			print(shelly_instance.get_attr('all'))
+	#shelly_instances = device_discovery('192.168.100.40', '192.168.100.50', 3, False, True, True, True)
+	#for shelly_type, shelly_instance_list in shelly_instances.items():
+	#	for shelly_instance in shelly_instance_list:
+	#		print(shelly_instance.get_attr('all'))
 	#a = check_device_type('FloziDimmer', 3, True, True)
 	#print(a.get_attr('brightness'))
 	#s = shelly_dimmer('192.168.100.123')
