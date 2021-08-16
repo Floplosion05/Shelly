@@ -57,6 +57,8 @@ class Shelly_Relay(Shelly):
 			print(self.device['url'].format(ip = self.ip, type = 'relay', channel = channel, command = temp_params))
 			r = requests.get(self.device['url'].format(ip = self.ip, type = 'relay', channel = channel, command = temp_params))
 			print(r.text)
+		else:
+			print('Channel out of range')
 
 class Shelly25_Relay(Shelly_Relay):
 
@@ -64,37 +66,35 @@ class Shelly25_Relay(Shelly_Relay):
 
 class Shelly25_Roller(Shelly):
 
-	def go(self, command : str, value : int = None, channel : str = '0'):
-		if (command in self.device['commands']['go'] and channel in self.device['channel']):
-			if (value == None):
-				r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = 'go=' + command))
-				print(r.text)
-			elif (value != None):
+	def go(self, command : str = None, timer : int = None, position : int = None, channel : str = '0'):
+
+		if channel in self.device['channel']:
+			temp_params = ''
+			if command in self.device['commands']['go']:
+				temp_params += 'go=' + command + '&'
+				if timer:
+					try:
+						if 0 <= timer <= 120:
+							temp_params += 'duration=' + str(timer)
+					except Exception as ex:
+						print('Failed with output: ' + str(ex))
+			elif position:
+				print(0 <= position <= 100)
 				try:
-					if (1 <= value <= 120):
-						r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = 'go=' + command + '&duration=' + str(value)))
-						print(r.text)
+					if 0 <= position <= 100:
+						r = requests.get(self.device['url'].format(ip = self.ip, type = 'roller', channel = channel, command = ''))
+						if (r.json()['positioning'] == True):
+							temp_params += 'go=to_pos&roller_pos=' + str(position)
+						else:
+							print('Device isnt calibrated, to calibrate use:\nx = Shelly25_Roller(<<IP>>)\nx.calibrate(<<CHANNEL>>)')
 				except Exception as ex:
 					print('Failed with output: ' + str(ex))
-
-		elif (command in self.device['commands']['pos'] and channel in self.device['channel']):
-				r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = ''))
-				try:
-					if (r.json()['positioning'] == True):
-						try:
-							if (1 <= value <= 100):
-								r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = 'go=' + command + '&roller_pos=' + str(value)))
-								print(r.text)
-						except Exception as ex:
-							print('Failed with output: ' + str(ex))
-					else:
-						print('Device isnt calibrated, to calibrate use:\nx = Shelly25_roller\nx.calibrate("0")')
-				except Exception as ex:
-					print('Failed with output: ' + str(ex))
-					print(r.text)
-
+			temp_params = temp_params.rstrip('&')
+			print(self.device['url'].format(ip = self.ip, type = 'roller', channel = channel, command = temp_params))
+			r = requests.get(self.device['url'].format(ip = self.ip, type = 'roller', channel = channel, command = temp_params))
+			print(r.text)
 		else:
-			print('Didnt recognise command: ' + command + ' on channel ' + channel)
+			print('Channel out of range')
 
 	def calibrate(self, channel : str = '0'):
 		if (channel in self.device['channel']):
@@ -105,7 +105,6 @@ class Shelly_Dimmer(Shelly):
 	
 	def turn(self, command : str = None, brightness : int = None, timer : int = None, channel : str = '0'):
 		if channel in self.device['channel']:
-			print(locals())
 			temp_params = ''
 			if command in self.device['commands']['turn']:
 				temp_params += 'turn=' + command + '&'
@@ -125,6 +124,8 @@ class Shelly_Dimmer(Shelly):
 			print(self.device['url'].format(ip = self.ip, type = 'light', channel = channel, command = temp_params))
 			r = requests.get(self.device['url'].format(ip = self.ip, type = 'light', channel = channel, command = temp_params))
 			print(r.text)
+		else:
+			print('Channel out of range')
 
 class Shelly_Plug(Shelly_Relay):
 
