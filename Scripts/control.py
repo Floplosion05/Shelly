@@ -20,24 +20,6 @@ class Shelly:
 	def check_device(self):
 		if (check_device_type(self.ip) != self.__class__.__name__):
 			self.error(1)
-		"""
-		r = requests.get(self.device['url'].format(ip = self.ip, type = 'status', channel = '', command = '')[:-2])
-		if (r.status_code != 200):
-			print('IP check failed with returncode: ' + str(r.status_code))
-			self.error(0)
-		else:
-			#print('IP check completed\n')
-			if (self.device['type'] not in r.json()):
-				print('Device type check failed')
-				for shelly_name, shelly in Shellys.items():
-					if shelly['type'] in r.json():
-						print('Wrong device type assigned: ' + self.__class__.__name__ + ', device is of type: ' + shelly_name + '\n')
-						break
-				self.error(1)
-			else:
-				pass
-				#print('Device type check completed')
-		"""
 
 	def get_attr(self, attr : str, channel : str = '0'):
 		if (channel in self.device['channel']):
@@ -47,9 +29,38 @@ class Shelly:
 			elif (attr == 'all'):
 				r = requests.get(self.device['url'].format(ip = self.ip, type = self.device['type'].replace('s', ''), channel = channel, command = '')[:-1])
 				return r.json()
+		else:
+			print('Channel out of range')
+
+	def reboot(self):
+		r = requests.get('http://' + self.ip + '/reboot')
+		print(r.text)
 	
 	def error(self, code):
 		exit('Device:\t' + self.ip + '\n' + self.errors[code] + '\nErrorcode: ' + str(code) + end_str)
+
+class Shelly_Relay(Shelly):
+
+	def turn(self, command : str = None, timer : int = None, channel : str = '0'):
+		if channel in self.device['channel']:
+			print(locals())
+			temp_params = ''
+			if command in self.device['commands']['turn']:
+				temp_params += 'turn=' + command + '&'
+			if timer:
+				try:
+					if 0 <= timer <= 120:
+						temp_params += 'timer=' + str(timer)
+				except Exception as ex:
+					print('Failed with output: ' + str(ex))
+			temp_params = temp_params.rstrip('&')
+			print(self.device['url'].format(ip = self.ip, type = 'relay', channel = channel, command = temp_params))
+			r = requests.get(self.device['url'].format(ip = self.ip, type = 'relay', channel = channel, command = temp_params))
+			print(r.text)
+
+class Shelly25_Relay(Shelly_Relay):
+
+	pass
 
 class Shelly25_Roller(Shelly):
 
@@ -90,21 +101,6 @@ class Shelly25_Roller(Shelly):
 			r = requests.get(self.device['url'].format(ip = self.ip, channel = channel + '/calibrate', command = ''))
 			print(r.text)
 
-class Shelly25_Relay(Shelly):
-
-	def turn(self, command : str, channel : str = '0', time : int = None):
-		if (command in self.device['commands']['turn'] and channel in self.device['channel']):
-			if (time == None):
-				r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = ''))
-				print(r.text)
-			else:
-				try:
-					if (0 <= time <= 120):
-						r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = 'turn=' + command + '&timer=' + str(time)))
-						print(r.text)
-				except Exception as ex:
-					print('Failed with output: ' + str(ex))
-
 class Shelly_Dimmer(Shelly):
 	
 	def turn(self, command : str = None, brightness : int = None, timer : int = None, channel : str = '0'):
@@ -129,44 +125,14 @@ class Shelly_Dimmer(Shelly):
 			print(self.device['url'].format(ip = self.ip, type = 'light', channel = channel, command = temp_params))
 			r = requests.get(self.device['url'].format(ip = self.ip, type = 'light', channel = channel, command = temp_params))
 			print(r.text)
-	
-	def brightness(self, brightness : int, channel : str = '0'):
-		try:
-			if (0 <= brightness <= 100):
-				r = requests.get(self.device['url'].format(ip = self.ip, type = 'light', channel = channel, command = 'brightness=' + str(brightness)))
-				print(r.text)
-		except Exception as ex:
-			print('Failed with output: ' + str(ex))
 
-class Shelly_Plug(Shelly):
+class Shelly_Plug(Shelly_Relay):
 
-	def turn(self, command : str, time : int = None, channel : str = '0'):
-		if (time == None):
-			if (command in self.device['commands']['turn']):
-				r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = 'turn=' + command))
-				print(r.text)
-		else:
-			try:
-				if (0 <= time <= 120):
-					r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = 'turn=' + command + '&timer=' + str(time)))
-					print(r.text)
-			except Exception as ex:
-				print('Failed with output: ' + str(ex))
+	pass
 
-class Shelly1(Shelly):
+class Shelly1(Shelly_Relay):
 
-	def turn(self, command : str, time : int = None, channel : str = '0'):
-		if (time == None):
-			if (command in self.device['commands']['turn']):
-				r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = 'turn=' + command))
-				print(r.text)
-		else:
-			try:
-				if (0 <= time <= 120):
-					r = requests.get(self.device['url'].format(ip = self.ip, channel = channel, command = 'turn=' + command + '&timer=' + str(time)))
-					print(r.text)
-			except Exception as ex:
-				print('Failed with output: ' + str(ex))
+	pass
 
 class Shelly_i3(Shelly):
 
@@ -174,7 +140,46 @@ class Shelly_i3(Shelly):
 
 class Shelly_RGBW2(Shelly):
 
-	pass
+	def turn(self, command : str = None, effect : int = None, red : int = None, green : int = None, blue : int = None, timer : int = None, channel : str = '0'):
+		if channel in self.device['channel']:
+			print(locals())
+			temp_params = ''
+			if command in self.device['commands']['turn']:
+				temp_params += 'turn=' + command + '&'
+			if effect:
+				try:
+					if 0 <= effect <= 4:
+						temp_params += 'brightness=' + str(effect) + '&'
+				except Exception as ex:
+					print('Failed with output: ' + str(ex))
+			if red:
+				try:
+					if 0 <= red <= 255:
+						temp_params += 'timer=' + str(red)
+				except Exception as ex:
+					print('Failed with output: ' + str(ex))
+			if green:
+				try:
+					if 0 <= green <= 255:
+						temp_params += 'timer=' + str(green)
+				except Exception as ex:
+					print('Failed with output: ' + str(ex))
+			if blue:
+				try:
+					if 0 <= blue <= 255:
+						temp_params += 'timer=' + str(blue)
+				except Exception as ex:
+					print('Failed with output: ' + str(ex))
+			if timer:
+				try:
+					if 0 <= timer <= 120:
+						temp_params += 'timer=' + str(timer)
+				except Exception as ex:
+					print('Failed with output: ' + str(ex))
+			temp_params = temp_params.rstrip('&')
+			print(self.device['url'].format(ip = self.ip, type = 'light', channel = channel, command = temp_params))
+			r = requests.get(self.device['url'].format(ip = self.ip, type = 'light', channel = channel, command = temp_params))
+			print(r.text)
 
 Shellys = {
 	'Shelly25_Relay' : {
@@ -192,7 +197,8 @@ Shellys = {
             ]
         },
         'channel' : [
-            '0'
+            '0',
+			'1'
         ],
         'attributes' : [
             'ison',
@@ -269,9 +275,6 @@ Shellys = {
 				'on',
 				'off',
 				'toggle'
-			],
-			'time' : [
-				'timer'
 			]
 		},
 		'channel' : [
@@ -296,9 +299,6 @@ Shellys = {
 				'on',
 				'off',
 				'toggle'
-			],
-			'time' : [
-				'timer'
 			]
 		},
 		'channel' : [
@@ -338,13 +338,6 @@ Shellys = {
 				'on',
 				'off',
 				'toggle'
-			],
-			'effect' : [
-				'0',
-				'1',
-				'2',
-				'3',
-				'4'
 			]
 		},
 		'channel' : [
@@ -572,10 +565,13 @@ def device_discovery(ip_start : str, ip_end : str, timeout : int = 3, verbose : 
 if __name__ == '__main__':
 
 	#for arg in sys.argv:
-	shelly_instances = device_discovery('192.168.100.0', '192.168.100.255', 3, False, True, True)
-	for shelly_type, shelly_instance_list in shelly_instances.items():
-		for shelly_instance in shelly_instance_list:
-			print(shelly_instance.get_attr('all'))
+	s = Shelly25_Relay('HoZiSchalter')
+	print(s.get_attr('ison', '1'))
+	#s.turn('off', 5)
+	#shelly_instances = device_discovery('192.168.100.0', '192.168.100.255', 3, False, True, True)
+	#for shelly_type, shelly_instance_list in shelly_instances.items():
+	#	for shelly_instance in shelly_instance_list:
+	#		print(shelly_instance.get_attr('all'))
 	#a = check_device_type('FloziDimmer', 3, True, True)
 	#print(a.get_attr('brightness'))
 	#s = Shelly_Dimmer('192.168.100.123')
