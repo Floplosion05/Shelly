@@ -4,7 +4,7 @@ import json
 from bs4 import BeautifulSoup
 import sys
 
-end_str = '\n\nIf you are having trouble, please visit https://github.com/Floplosion05/Shelly'
+end_str = '\n\nIf you are having trouble, please visit https://www.github.com/Floplosion05/Shelly'
 errors = ['Ip could not be reached', 'Device Type does not match']
 
 url = 'http://{ip}/{type}/{channel}?{command}'
