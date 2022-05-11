@@ -1,3 +1,5 @@
+'''Published by @Floplosion05 under the MIT-License'''
+
 import requests
 from requests.auth import HTTPBasicAuth
 import json
